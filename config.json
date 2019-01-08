@@ -1,0 +1,9 @@
+{
+    "cachedir": "/osm/camping/imposm-data/cache",
+    "diffdir": "/osm/camping/imposm-data/diff",
+    "connection": "postgis://127.0.0.1/poi",
+    "mapping": "/osm/camping/imposm/poi-only.yml",
+    "srid": 4326,
+    "replication_url": "https://planet.openstreetmap.org/replication/hour/",
+    "replication_interval": "1h"
+}

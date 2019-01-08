@@ -1,0 +1,11 @@
+[Unit]
+Description=IMPOSM incremental DB update script
+After=network.target
+
+[Service]
+User=sven
+Group=sven
+ExecStart=/osm/camping/imposm/update.sh /osm/camping/imposm/config.json
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,50 @@
+tables:
+
+  poi_poly:
+    fields:
+    - key: null
+      name: osm_id
+      type: id
+    - key: null
+      name: geom
+      type: geometry
+    - key: null
+      name: tags
+      type: hstore_tags
+    type: polygon
+    mapping:
+      amenity: [__any__]
+      historic: [__any__]
+      leisure: [__any__]
+      shop: [__any__]
+      tourism: [__any__]
+
+  poi_point:
+    fields:
+    - key: null
+      name: osm_id
+      type: id
+    - key: null
+      name: geom
+      type: geometry
+    - key: null
+      name: tags
+      type: hstore_tags
+    type: point
+    mapping:
+      amenity: [__any__]
+      historic: [__any__]
+      leisure: [__any__] 
+      shop: [__any__]    
+      tourism: [__any__] 
+
+tags:
+  exclude:
+  - created_by
+  - source
+  - tiger:*
+  - note
+  load_all: true
+
+# mangles nodes positive, ways negative, relations negative -1e17
+use_single_id_space: true
