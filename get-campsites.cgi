@@ -22,7 +22,7 @@ sql_query="""
 SELECT Jsonb_build_object('type', 'FeatureCollection', 'features',
               Jsonb_agg(features.feature))
 FROM   (SELECT Json_build_object('type', 'Feature', 'geometry',
-                              St_asgeojson(geom) :: json, 'properties',
+                              St_asgeojson(St_centroid(geom)) :: json, 'properties',
                               Json_build_object('osm_object', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id) ::jsonb ||
                               tags ::jsonb
                               || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb
