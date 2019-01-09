@@ -92,3 +92,6 @@ WHERE     ((
                               tags ? 'tourism')
           AND       (
                               tags->'tourism' = 'camp_site'));
+
+-- geometry index
+CREATE INDEX osm_poi_campsite_geom ON osm_poi_campsites USING GIST (geom);
