@@ -74,13 +74,22 @@ def application(environ, start_response):
   start_response('200 OK', [('Content-Type', 'application/json')])
   if not 'REQUEST_METHOD' in environ:
     return([b'{}\n'])
-  if environ['REQUEST_METHOD'] != 'GET':
+  if environ['REQUEST_METHOD'] not in ['GET', 'POST']:
     return([b'{}\n'])
-  if not 'QUERY_STRING' in environ:
-    return([b'{}\n'])
-  parms = cgi.parse_qs(environ.get('QUERY_STRING', ''))
-  # get bounding box
-  bbox = parms.get('bbox', ['0,0,0'])[0]
+  if environ['REQUEST_METHOD'] == 'GET':
+    if not 'QUERY_STRING' in environ:
+      return([b'{}\n'])
+    parms = cgi.parse_qs(environ.get('QUERY_STRING', ''))
+    bbox = parms.get('bbox', ['0,0,0'])[0]
+  else:
+    environ['QUERY_STRING'] = ''
+    post = cgi.FieldStorage(
+        fp=environ['wsgi.input'],
+        environ=environ,
+        keep_blank_values=True
+    )
+    bbox = post.getlist("bbox")[0]
+    
   # validate floating point values
   coords=bbox2flist(bbox)
   if coords == []:
