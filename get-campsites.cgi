@@ -21,9 +21,9 @@ dbconnstr="dbname=poi"
 sql_query="""
 SELECT Jsonb_build_object('type', 'FeatureCollection', 'features',
               Jsonb_agg(features.feature))
-FROM   (SELECT Json_build_object('type', 'Feature', 'geometry',
-                              St_asgeojson(St_centroid(geom)) :: json, 'properties',
-                              Json_build_object('id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id) ::jsonb ||
+FROM   (SELECT Json_build_object('type', 'Feature',
+                              'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
+                              'geometry',St_asgeojson(St_centroid(geom)) :: json, 'properties',
                               tags ::jsonb
                               || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb
                               || CASE when pub = True THEN Json_build_object('pub','yes') ELSE '{}' END ::jsonb
