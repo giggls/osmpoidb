@@ -15,6 +15,10 @@ SELECT    (-1*poly.osm_id)      AS osm_id,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           poly.tags - 'tourism'::text AS tags,
           'way' as osm_type,
+          CASE WHEN poly.tags->'access' IN ('private','members') THEN 'private'
+               WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
+               WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
+          ELSE 'standard' END AS category,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'toilets', false)) AS toilets,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
@@ -47,6 +51,10 @@ SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           poly.tags - 'tourism'::text - 'type'::text AS tags,
           'relation' as osm_type,
+          CASE WHEN poly.tags->'access' IN ('private','members') THEN 'private'
+               WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
+               WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
+          ELSE 'standard' END AS category,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'toilets', false)) AS toilets,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
@@ -80,9 +88,13 @@ SELECT    osm_id,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           tags - 'tourism'::text AS tags,
           'node' as osm_type,
+          CASE WHEN tags->'access' IN ('private','members') THEN 'private'
+               WHEN tags->'group_only' = 'yes' THEN 'group_only'
+               WHEN tags->'backcountry' = 'yes' THEN 'backcountry'
+          ELSE 'standard' END AS category,
           CASE WHEN tags->'toilets'='yes' THEN True ELSE False END,
           CASE WHEN tags->'shower'='yes' THEN True ELSE False END,
-          False,
+          CASE WHEN tags->'swimming_pool'='yes' THEN True ELSE False END,
           False,
           False,
           False,

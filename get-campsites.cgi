@@ -25,6 +25,7 @@ FROM   (SELECT Json_build_object('type', 'Feature',
                               'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
                               'geometry',St_asgeojson(St_centroid(geom)) :: json, 'properties',
                               tags ::jsonb
+                              || Json_build_object('category', category) ::jsonb
                               || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb
                               || CASE when pub = True THEN Json_build_object('pub','yes') ELSE '{}' END ::jsonb
                               || CASE when bar = True THEN Json_build_object('bar','yes') ELSE '{}' END ::jsonb
