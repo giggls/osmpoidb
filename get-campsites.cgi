@@ -35,6 +35,7 @@ FROM   (SELECT Json_build_object('type', 'Feature',
                               || CASE when toilets = True THEN Json_build_object('toilets','yes') ELSE '{}' END ::jsonb
                               || CASE when shower = True THEN Json_build_object('shower','yes') ELSE '{}' END ::jsonb
                               || CASE when swimming_pool = True THEN Json_build_object('swimming_pool','yes') ELSE '{}' END ::jsonb
+                              || CASE when sauna = True THEN Json_build_object('sauna','yes') ELSE '{}' END ::jsonb
                               || CASE when fast_food = True THEN Json_build_object('fast_food','yes') ELSE '{}' END ::jsonb
                               || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb
                               || CASE when pub = True THEN Json_build_object('pub','yes') ELSE '{}' END ::jsonb

@@ -39,6 +39,8 @@ AND       pt.tags->'amenity' = 'shower', false)) AS shower,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'leisure' = 'swimming_pool', false)) AS swimming_pool,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'leisure' = 'sauna', false)) AS sauna,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'fast_food', false)) AS fast_food,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'restaurant', false)) AS restaurant,
@@ -88,6 +90,8 @@ AND       pt.tags->'amenity' = 'shower', false)) AS shower,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'leisure' = 'swimming_pool', false)) AS swimming_pool,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'leisure' = 'sauna', false)) AS sauna,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'fast_food', false)) AS fast_food,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'restaurant', false)) AS restaurant,
@@ -119,6 +123,7 @@ SELECT    osm_id,
                WHEN tags->'group_only' = 'yes' THEN 'group_only'
                WHEN tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
+          False,
           False,
           False,
           False,
