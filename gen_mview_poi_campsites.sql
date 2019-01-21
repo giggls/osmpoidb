@@ -140,3 +140,5 @@ WHERE     ((
 
 -- geometry index
 CREATE INDEX osm_poi_campsites_geom ON osm_poi_campsites USING GIST (geom);
+
+GRANT SELECT ON osm_poi_campsites to public;
