@@ -8,7 +8,7 @@ UNION ALL
 SELECT    osm_id,tags,geom
 FROM      osm_poi_point;
 
-
+DROP MATERIALIZED VIEW IF EXISTS osm_poi_campsites;
 CREATE MATERIALIZED VIEW osm_poi_campsites AS
 SELECT    (-1*poly.osm_id)      AS osm_id,
           poly.geom             AS geom,
@@ -16,15 +16,28 @@ SELECT    (-1*poly.osm_id)      AS osm_id,
           poly.tags - 'tourism'::text AS tags,
           'way' as osm_type,
           CASE WHEN poly.tags->'access' IN ('private','members') THEN 'private'
+               WHEN poly.tags->'nudism' IN ('yes','obligatory','customary') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
                WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'telephone', false)) AS telephone,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'post_box', false)) AS post_box,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       (pt.tags ? 'shop'), false)) AS shop,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'firepit', false)) AS firepit,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'toilets', false)) AS toilets,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'shower', false)) AS shower,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
-AND       pt.tags->'leisure' = 'swimming_pool', false)) AS pool,
+AND       pt.tags->'leisure' = 'swimming_pool', false)) AS swimming_pool,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'fast_food', false)) AS fast_food,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
@@ -52,15 +65,28 @@ SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
           poly.tags - 'tourism'::text - 'type'::text AS tags,
           'relation' as osm_type,
           CASE WHEN poly.tags->'access' IN ('private','members') THEN 'private'
+               WHEN poly.tags->'nudism' IN ('yes','obligatory','customary') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
                WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'telephone', false)) AS telephone,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'post_box', false)) AS post_box,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       (pt.tags ? 'shop'), false)) AS shop,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'firepit', false)) AS firepit,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'toilets', false)) AS toilets,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'shower', false)) AS shower,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
-AND       pt.tags->'leisure' = 'swimming_pool', false)) AS pool,
+AND       pt.tags->'leisure' = 'swimming_pool', false)) AS swimming_pool,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'fast_food', false)) AS fast_food,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
@@ -89,16 +115,23 @@ SELECT    osm_id,
           tags - 'tourism'::text AS tags,
           'node' as osm_type,
           CASE WHEN tags->'access' IN ('private','members') THEN 'private'
+               WHEN tags->'nudism' IN ('yes','obligatory','customary') THEN 'nudist'
                WHEN tags->'group_only' = 'yes' THEN 'group_only'
                WHEN tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
-          CASE WHEN tags->'toilets'='yes' THEN True ELSE False END,
-          CASE WHEN tags->'shower'='yes' THEN True ELSE False END,
-          CASE WHEN tags->'swimming_pool'='yes' THEN True ELSE False END,
           False,
           False,
           False,
-          False
+          False,
+          False,
+          False,
+          False,
+          False,
+          False,
+          False,
+          False,
+          False,
+          False          
 FROM      osm_poi_point          
 WHERE     ((
                               tags ? 'tourism')

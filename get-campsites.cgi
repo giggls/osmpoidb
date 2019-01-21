@@ -26,14 +26,19 @@ FROM   (SELECT Json_build_object('type', 'Feature',
                               'geometry',St_asgeojson(St_centroid(geom)) :: json, 'properties',
                               tags ::jsonb
                               || Json_build_object('category', category) ::jsonb
+                              || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
+                              || CASE when post_box = True THEN Json_build_object('post_box','yes') ELSE '{}' END ::jsonb
+                              || CASE when drinking_water = True THEN Json_build_object('drinking_water','yes') ELSE '{}' END ::jsonb
+                              || CASE when shop = True THEN Json_build_object('shop','yes') ELSE '{}' END ::jsonb
+                              || CASE when sanitary_dump_station = True THEN Json_build_object('sanitary_dump_station','yes') ELSE '{}' END ::jsonb
+                              || CASE when firepit = True THEN Json_build_object('openfire','yes') ELSE '{}' END ::jsonb
+                              || CASE when toilets = True THEN Json_build_object('toilets','yes') ELSE '{}' END ::jsonb
+                              || CASE when shower = True THEN Json_build_object('shower','yes') ELSE '{}' END ::jsonb
+                              || CASE when swimming_pool = True THEN Json_build_object('swimming_pool','yes') ELSE '{}' END ::jsonb
+                              || CASE when fast_food = True THEN Json_build_object('fast_food','yes') ELSE '{}' END ::jsonb
                               || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb
                               || CASE when pub = True THEN Json_build_object('pub','yes') ELSE '{}' END ::jsonb
                               || CASE when bar = True THEN Json_build_object('bar','yes') ELSE '{}' END ::jsonb
-                              || CASE when fast_food = True THEN Json_build_object('fast_food','yes') ELSE '{}' END ::jsonb
-                              || CASE when pool = True THEN Json_build_object('pool','yes') ELSE '{}' END ::jsonb
-                              || CASE when pool = True THEN Json_build_object('pool','yes') ELSE '{}' END ::jsonb
-                              || CASE when shower = True THEN Json_build_object('shower','yes') ELSE '{}' END ::jsonb
-                              || CASE when toilets = True THEN Json_build_object('toilets','yes') ELSE '{}' END ::jsonb
                               )
         AS    feature
         FROM  osm_poi_campsites
