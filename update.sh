@@ -34,7 +34,7 @@ function post_replication() {
   ts=$(date +%Y-%m-%dT%H:%M:%S%:z)
   timestamp=$(date +%s)
   echo "[$ts] 0:00:00 [info] post replication script started"
-  echo "REFRESH MATERIALIZED VIEW osm_poi_campsites;" |psql poi --quiet
+  echo "REFRESH MATERIALIZED VIEW CONCURRENTLY osm_poi_campsites;" |psql poi --quiet
   # remove diff import files older than 2 hours
   find $DIFFDIR -type f \! -name "last.state.txt" -mmin +120 -exec rm {} \;
   ts=$(date +%Y-%m-%dT%H:%M:%S%:z)
