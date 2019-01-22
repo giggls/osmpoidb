@@ -30,8 +30,11 @@ FROM   (SELECT Json_build_object('type', 'Feature',
                               || CASE when post_box = True THEN Json_build_object('post_box','yes') ELSE '{}' END ::jsonb
                               || CASE when drinking_water = True THEN Json_build_object('drinking_water','yes') ELSE '{}' END ::jsonb
                               || CASE when shop = True THEN Json_build_object('shop','yes') ELSE '{}' END ::jsonb
+                              || CASE when laundry = True THEN Json_build_object('laundry','yes') ELSE '{}' END ::jsonb
+                              || CASE when playground = True THEN Json_build_object('playground','yes') ELSE '{}' END ::jsonb
                               || CASE when sanitary_dump_station = True THEN Json_build_object('sanitary_dump_station','yes') ELSE '{}' END ::jsonb
                               || CASE when firepit = True THEN Json_build_object('openfire','yes') ELSE '{}' END ::jsonb
+                              || CASE when bbq = True THEN Json_build_object('bbq','yes') ELSE '{}' END ::jsonb
                               || CASE when toilets = True THEN Json_build_object('toilets','yes') ELSE '{}' END ::jsonb
                               || CASE when shower = True THEN Json_build_object('shower','yes') ELSE '{}' END ::jsonb
                               || CASE when swimming_pool = True THEN Json_build_object('swimming_pool','yes') ELSE '{}' END ::jsonb

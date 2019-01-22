@@ -26,16 +26,23 @@ AND       pt.tags->'amenity' = 'telephone', false)) AS telephone,
 AND       pt.tags->'amenity' = 'post_box', false)) AS post_box,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
+-- any shop likely convenience
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       (pt.tags ? 'shop'), false)) AS shop,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'shop' = 'laundry', false)) AS laundry,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'firepit', false)) AS firepit,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'bbq', false)) AS bbq,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'toilets', false)) AS toilets,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'shower', false)) AS shower,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'leisure' = 'playground', false)) AS playground,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'leisure' = 'swimming_pool', false)) AS swimming_pool,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
@@ -77,16 +84,23 @@ AND       pt.tags->'amenity' = 'telephone', false)) AS telephone,
 AND       pt.tags->'amenity' = 'post_box', false)) AS post_box,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
+-- any shop likely convenience
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       (pt.tags ? 'shop'), false)) AS shop,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'shop' = 'laundry', false)) AS laundry,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'firepit', false)) AS firepit,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'amenity' = 'bbq', false)) AS bbq,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'toilets', false)) AS toilets,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'shower', false)) AS shower,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
+AND       pt.tags->'leisure' = 'playground', false)) AS playground,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'leisure' = 'swimming_pool', false)) AS swimming_pool,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
@@ -136,7 +150,10 @@ SELECT    osm_id,
           False,
           False,
           False,
-          False          
+          False,
+          False,
+          False,
+          False
 FROM      osm_poi_point          
 WHERE     ((
                               tags ? 'tourism')
