@@ -16,7 +16,7 @@ SELECT    (-1*poly.osm_id)      AS osm_id,
           poly.tags - 'tourism'::text AS tags,
           'way' as osm_type,
           CASE WHEN poly.tags->'access' IN ('private','members') THEN 'private'
-               WHEN poly.tags->'nudism' IN ('yes','obligatory','customary') THEN 'nudist'
+               WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
                WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
@@ -54,14 +54,14 @@ AND       pt.tags->'amenity' = 'restaurant', false)) AS restaurant,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'pub', false)) AS pub,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
-AND       pt.tags->'amenity' = 'bar', false)) AS bar
+AND       pt.tags->'amenity' = 'bar', false)) AS bar,
+-- This will produce a list of available sport facilities on the premises
+array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects(poly.geom, pt.geom)
+AND       (pt.tags ? 'sport') AND (pt.osm_id != poly.osm_id)) THEN pt.tags->'sport' END),NULL) as sport
 FROM      osm_poi_poly                               AS poly
 LEFT JOIN osm_poi_all                                AS pt
 ON        poly.geom && pt.geom
-WHERE     ((
-                              poly.tags ? 'tourism')
-          AND       (
-                              poly.tags->'tourism' = 'camp_site'))
+WHERE     (poly.tags ? 'tourism') AND (poly.tags->'tourism' = 'camp_site')
 -- campsites from OSM ways
           AND (poly.osm_id < 0) AND (poly.osm_id > -1e17)
 GROUP BY  poly.osm_id,
@@ -74,7 +74,7 @@ SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
           poly.tags - 'tourism'::text - 'type'::text AS tags,
           'relation' as osm_type,
           CASE WHEN poly.tags->'access' IN ('private','members') THEN 'private'
-               WHEN poly.tags->'nudism' IN ('yes','obligatory','customary') THEN 'nudist'
+               WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
                WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
@@ -112,14 +112,14 @@ AND       pt.tags->'amenity' = 'restaurant', false)) AS restaurant,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'pub', false)) AS pub,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
-AND       pt.tags->'amenity' = 'bar', false)) AS bar
+AND       pt.tags->'amenity' = 'bar', false)) AS bar,
+-- This will produce a list of available sport facilities on the premises
+array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects(poly.geom, pt.geom)
+AND       (pt.tags ? 'sport') AND (pt.osm_id != poly.osm_id)) THEN pt.tags->'sport' END),NULL) as sport
 FROM      osm_poi_poly                               AS poly
 LEFT JOIN osm_poi_all                                AS pt
 ON        poly.geom && pt.geom
-WHERE     ((
-                              poly.tags ? 'tourism')
-          AND       (
-                              poly.tags->'tourism' = 'camp_site'))
+WHERE     (poly.tags ? 'tourism') AND (poly.tags->'tourism' = 'camp_site')
 -- campsites from OSM relations
           AND (poly.osm_id < -1e17)
 GROUP BY  poly.osm_id,
@@ -153,12 +153,10 @@ SELECT    osm_id,
           False,
           False,
           False,
-          False
+          False,
+          '{}'
 FROM      osm_poi_point          
-WHERE     ((
-                              tags ? 'tourism')
-          AND       (
-                              tags->'tourism' = 'camp_site'));
+WHERE     ((tags ? 'tourism') AND (tags->'tourism' = 'camp_site'));
 
 -- geometry index
 CREATE INDEX osm_poi_campsites_geom ON osm_poi_campsites USING GIST (geom);

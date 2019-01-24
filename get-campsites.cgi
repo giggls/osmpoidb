@@ -43,6 +43,7 @@ FROM   (SELECT Json_build_object('type', 'Feature',
                               || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb
                               || CASE when pub = True THEN Json_build_object('pub','yes') ELSE '{}' END ::jsonb
                               || CASE when bar = True THEN Json_build_object('bar','yes') ELSE '{}' END ::jsonb
+                              || CASE when sport != '{}' THEN Json_build_object('sport',sport) ELSE '{}' END ::jsonb
                               )
         AS    feature
         FROM  osm_poi_campsites
