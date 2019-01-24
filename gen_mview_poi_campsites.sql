@@ -162,5 +162,9 @@ WHERE     ((
 
 -- geometry index
 CREATE INDEX osm_poi_campsites_geom ON osm_poi_campsites USING GIST (geom);
+-- index on osm_id (UNIQUE)
+-- This seems to be needed for CONCURRENTLY REFRESH of MATERIALIZED VIEW
+CREATE UNIQUE INDEX osm_poi_campsites_osm_id ON osm_poi_campsites (osm_id);
+
 
 GRANT SELECT ON osm_poi_campsites to public;
