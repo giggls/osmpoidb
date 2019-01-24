@@ -34,7 +34,7 @@ AND       pt.tags->'shop' = 'laundry', false)) AS laundry,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
-AND       pt.tags->'amenity' = 'firepit', false)) AS firepit,
+AND       pt.tags->'leisure' = 'firepit', false)) AS firepit,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'bbq', false)) AS bbq,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
@@ -92,7 +92,7 @@ AND       pt.tags->'shop' = 'laundry', false)) AS laundry,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
-AND       pt.tags->'amenity' = 'firepit', false)) AS firepit,
+AND       pt.tags->'leisure' = 'firepit', false)) AS firepit,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'bbq', false)) AS bbq,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
