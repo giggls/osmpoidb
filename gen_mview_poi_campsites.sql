@@ -15,8 +15,7 @@ SELECT    (-1*poly.osm_id)      AS osm_id,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           poly.tags - 'tourism'::text AS tags,
           'way' as osm_type,
-          CASE WHEN poly.tags->'access' IN ('private','members') THEN 'private'
-               WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
+          CASE WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
                WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
@@ -73,8 +72,7 @@ SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           poly.tags - 'tourism'::text - 'type'::text AS tags,
           'relation' as osm_type,
-          CASE WHEN poly.tags->'access' IN ('private','members') THEN 'private'
-               WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
+          CASE WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
                WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
@@ -132,8 +130,7 @@ SELECT    osm_id,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           tags - 'tourism'::text AS tags,
           'node' as osm_type,
-          CASE WHEN tags->'access' IN ('private','members') THEN 'private'
-               WHEN tags->'nudism' IN ('yes','obligatory','customary') THEN 'nudist'
+          CASE WHEN tags->'nudism' IN ('yes','obligatory','customary') THEN 'nudist'
                WHEN tags->'group_only' = 'yes' THEN 'group_only'
                WHEN tags->'backcountry' = 'yes' THEN 'backcountry'
           ELSE 'standard' END AS category,
