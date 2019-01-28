@@ -21,7 +21,34 @@ dbconnstr="dbname=poi"
 sql_query="""
 SELECT Jsonb_build_object('type', 'FeatureCollection', 'features',
               Jsonb_agg(features.feature))
-FROM   (SELECT Json_build_object('type', 'Feature',
+FROM   (SELECT CASE WHEN (osm_type != 'node')
+                              THEN Json_build_object('type', 'Feature',
+                              'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
+                              'bbox', array[round(ST_XMin(geom)::numeric,7),round(ST_YMin(geom)::numeric,7),
+                                            round(ST_XMax(geom)::numeric,7),round(ST_YMax(geom)::numeric,7)],
+                              'geometry',St_asgeojson(St_centroid(geom)) :: json, 'properties',
+                              tags ::jsonb
+                              || Json_build_object('category', category) ::jsonb
+                              || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
+                              || CASE when post_box = True THEN Json_build_object('post_box','yes') ELSE '{}' END ::jsonb
+                              || CASE when drinking_water = True THEN Json_build_object('drinking_water','yes') ELSE '{}' END ::jsonb
+                              || CASE when shop = True THEN Json_build_object('shop','yes') ELSE '{}' END ::jsonb
+                              || CASE when laundry = True THEN Json_build_object('laundry','yes') ELSE '{}' END ::jsonb
+                              || CASE when playground = True THEN Json_build_object('playground','yes') ELSE '{}' END ::jsonb
+                              || CASE when sanitary_dump_station = True THEN Json_build_object('sanitary_dump_station','yes') ELSE '{}' END ::jsonb
+                              || CASE when firepit = True THEN Json_build_object('openfire','yes') ELSE '{}' END ::jsonb
+                              || CASE when bbq = True THEN Json_build_object('bbq','yes') ELSE '{}' END ::jsonb
+                              || CASE when toilets = True THEN Json_build_object('toilets','yes') ELSE '{}' END ::jsonb
+                              || CASE when shower = True THEN Json_build_object('shower','yes') ELSE '{}' END ::jsonb
+                              || CASE when swimming_pool = True THEN Json_build_object('swimming_pool','yes') ELSE '{}' END ::jsonb
+                              || CASE when sauna = True THEN Json_build_object('sauna','yes') ELSE '{}' END ::jsonb
+                              || CASE when fast_food = True THEN Json_build_object('fast_food','yes') ELSE '{}' END ::jsonb
+                              || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb
+                              || CASE when pub = True THEN Json_build_object('pub','yes') ELSE '{}' END ::jsonb
+                              || CASE when bar = True THEN Json_build_object('bar','yes') ELSE '{}' END ::jsonb
+                              || CASE when sport != '{}' THEN Json_build_object('sport',sport) ELSE '{}' END ::jsonb
+                              )
+                              ELSE Json_build_object('type', 'Feature',
                               'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
                               'geometry',St_asgeojson(St_centroid(geom)) :: json, 'properties',
                               tags ::jsonb
@@ -45,6 +72,7 @@ FROM   (SELECT Json_build_object('type', 'Feature',
                               || CASE when bar = True THEN Json_build_object('bar','yes') ELSE '{}' END ::jsonb
                               || CASE when sport != '{}' THEN Json_build_object('sport',sport) ELSE '{}' END ::jsonb
                               )
+                              END
         AS    feature
         FROM  osm_poi_campsites
         WHERE geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326)
