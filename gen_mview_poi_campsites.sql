@@ -1,3 +1,29 @@
+-- unification function fo inconsistent tagging
+-- exchange keys according to mapping
+
+CREATE OR REPLACE FUNCTION
+unify_tags(tin hstore) returns hstore as $$
+DECLARE
+ out hstore;
+ tag text[];
+ mapping CONSTANT text[][] := '{{booking,reservation},
+                                {contact:phone,website},
+                                {contact:fax,website},
+                                {contact:website,website},
+                                {contact:email,email},
+                                {url,website}}';
+BEGIN
+  out = tin;
+  FOREACH tag SLICE 1 IN ARRAY mapping
+  LOOP
+    IF tin ? tag[1] THEN
+      out = (out - tag[1]) || hstore(tag[2], out -> tag[1]);
+    END IF;
+  END LOOP;
+  RETURN out;
+END
+$$ language plpgsql;
+
 -- create MATERIALIZED VIEW to be used
 -- in json output
 
@@ -8,12 +34,14 @@ UNION ALL
 SELECT    osm_id,tags,geom
 FROM      osm_poi_point;
 
+
+
 DROP MATERIALIZED VIEW IF EXISTS osm_poi_campsites;
 CREATE MATERIALIZED VIEW osm_poi_campsites AS
 SELECT    (-1*poly.osm_id)      AS osm_id,
           poly.geom             AS geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
-          poly.tags AS tags,
+          unify_tags(poly.tags) AS tags,
           'way' as osm_type,
           CASE WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
@@ -72,7 +100,7 @@ UNION ALL
 SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
           poly.geom               AS geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
-          poly.tags AS tags,
+          unify_tags(poly.tags) AS tags,
           'relation' as osm_type,
           CASE WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
@@ -132,7 +160,7 @@ UNION ALL
 SELECT    osm_id,
           geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
-          tags AS tags,
+          unify_tags(tags) AS tags,
           'node' as osm_type,
           CASE WHEN tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN tags->'group_only' = 'yes' THEN 'group_only'
