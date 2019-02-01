@@ -7,8 +7,8 @@ DECLARE
  out hstore;
  tag text[];
  mapping CONSTANT text[][] := '{{booking,reservation},
-                                {contact:phone,website},
-                                {contact:fax,website},
+                                {contact:phone,phone},
+                                {contact:fax,fax},
                                 {contact:website,website},
                                 {contact:email,email},
                                 {url,website}}';
