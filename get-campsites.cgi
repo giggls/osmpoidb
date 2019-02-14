@@ -7,9 +7,9 @@
 # (c) 2019 Sven Geggus <sven-osm@geggus-net>
 #
 #
-# test using the following command:
+# test using the following commands:
 # REQUEST_METHOD=GET QUERY_STRING="bbox=-1.38,44.47,-0.95,44.81" ./get-campsites.cgi |tail +5 |jq .
-#
+# REQUEST_METHOD=GET QUERY_STRING="osm_id=115074273&osm_type=way" ./get-campsites.cgi |tail +5 |jq .
 #
 import wsgiref.handlers
 import cgi
