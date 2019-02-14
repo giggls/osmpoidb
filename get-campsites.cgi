@@ -75,9 +75,15 @@ FROM   (SELECT CASE WHEN (osm_type != 'node')
                               END
         AS    feature
         FROM  osm_poi_campsites
-        WHERE geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326)
+        WHERE %s
 ) features;
 """
+
+sql_where_bbox="geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326)"
+
+sql_where_id="osm_id = %s AND osm_type = '%s'"
+
+empty_geojson = b'{"type": "FeatureCollection", "features": []}\n'
 
 # check if bbox contains valid geographical coordinates
 def validate_bbox(bbox):
@@ -112,14 +118,16 @@ def bbox2flist(bbox):
 def application(environ, start_response):
   start_response('200 OK', [('Content-Type', 'application/json')])
   if not 'REQUEST_METHOD' in environ:
-    return([b'{}\n'])
+    return([empty_geojson])
   if environ['REQUEST_METHOD'] not in ['GET', 'POST']:
     return([b'{}\n'])
   if environ['REQUEST_METHOD'] == 'GET':
     if not 'QUERY_STRING' in environ:
-      return([b'{}\n'])
+      return([empty_geojson])
     parms = cgi.parse_qs(environ.get('QUERY_STRING', ''))
-    bbox = parms.get('bbox', ['0,0,0'])[0]
+    bbox = parms.get('bbox')
+    osm_id = parms.get('osm_id')
+    osm_type = parms.get('osm_type')
   else:
     environ['QUERY_STRING'] = ''
     post = cgi.FieldStorage(
@@ -127,22 +135,42 @@ def application(environ, start_response):
         environ=environ,
         keep_blank_values=True
     )
-    bbox = post.getlist("bbox")[0]
+    bbox = post.getlist("bbox")
+    osm_id = post.getlist("osm_id")
+    osm_type = post.getlist("osm_type")
     
-  # validate floating point values
-  coords=bbox2flist(bbox)
-  if coords == []:
-    return([b'{}\n'])
-  # bbox sanity check
-  if (validate_bbox(coords) == False):
-    return([b'{}\n'])
-  
+  if ((bbox is not None) and (bbox != [])):
+    # validate floating point values in bbox
+    coords=bbox2flist(bbox[0])
+    if coords == []:
+      return([empty_geojson])
+    # bbox sanity check
+    if (validate_bbox(coords) == False):
+      return([empty_geojson])
+  else:
+    # add osm_id handling here
+    if ((osm_id is not None) and (osm_id != [])
+      and (osm_type is not None) and (osm_type != [])):
+      # validate osm_id must be numeric
+      if not osm_id[0].isdigit():
+        return([empty_geojson])
+      if not osm_type[0] in ["node","way","relation"]:
+        return([empty_geojson])
+    else:
+      return([empty_geojson])
+
   try:
     conn = psycopg2.connect(dbconnstr)
   except:
-    return([b'{}\n'])
+    return([empty_geojson])
   
-  q = sql_query % (coords[0],coords[1],coords[2],coords[3])
+  if ((bbox is not None) and (bbox != [])):
+    q = sql_where_bbox % (coords[0],coords[1],coords[2],coords[3])
+    q = sql_query % q
+  else:
+    q = sql_where_id % (osm_id[0],osm_type[0])
+    q = sql_query % q
+  
   cur = conn.cursor()
   cur.execute(q)
   res = cur.fetchall()
