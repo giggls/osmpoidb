@@ -20,7 +20,7 @@ dbconnstr="dbname=poi"
 
 sql_query="""
 SELECT Jsonb_build_object('type', 'FeatureCollection', 'features',
-              Jsonb_agg(features.feature))
+              coalesce(json_agg(features.feature), '[]'::json))
 FROM   (SELECT CASE WHEN (osm_type != 'node')
                               THEN Json_build_object('type', 'Feature',
                               'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
