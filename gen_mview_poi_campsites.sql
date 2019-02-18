@@ -59,7 +59,7 @@ AND       pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       (pt.tags ? 'shop'), false)) AS shop,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
-AND       pt.tags->'shop' = 'laundry', false)) AS laundry,
+AND       ((pt.tags->'amenity' = 'washing_machine') OR (pt.tags->'shop' = 'laundry')), false)) AS laundry,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
@@ -118,7 +118,7 @@ AND       pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       (pt.tags ? 'shop'), false)) AS shop,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
-AND       pt.tags->'shop' = 'laundry', false)) AS laundry,
+AND       ((pt.tags->'amenity' = 'washing_machine') OR (pt.tags->'shop' = 'laundry')), false)) AS laundry,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
 AND       pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom)
