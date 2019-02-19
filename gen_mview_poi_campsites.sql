@@ -35,9 +35,7 @@ SELECT    osm_id,tags,geom
 FROM      osm_poi_point;
 
 
-
-DROP MATERIALIZED VIEW IF EXISTS osm_poi_campsites;
-CREATE MATERIALIZED VIEW osm_poi_campsites AS
+CREATE MATERIALIZED VIEW osm_poi_campsites_tmp AS
 SELECT    (-1*poly.osm_id)      AS osm_id,
           poly.geom             AS geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
@@ -155,10 +153,15 @@ FROM      osm_poi_point
 WHERE     (tags ? 'tourism') AND (tags->'tourism' in ('camp_site','caravan_site'));
 
 -- geometry index
-CREATE INDEX osm_poi_campsites_geom ON osm_poi_campsites USING GIST (geom);
+CREATE INDEX osm_poi_campsites_geom_tmp ON osm_poi_campsites_tmp USING GIST (geom);
 -- index on osm_id (UNIQUE)
 -- This seems to be needed for CONCURRENTLY REFRESH of MATERIALIZED VIEW
-CREATE UNIQUE INDEX osm_poi_campsites_osm_id ON osm_poi_campsites (osm_id);
+CREATE UNIQUE INDEX osm_poi_campsites_osm_id_tmp ON osm_poi_campsites_tmp (osm_id);
 
+-- this is hopefully atomic enough for a production setup
+DROP MATERIALIZED VIEW osm_poi_campsites;
+ALTER MATERIALIZED VIEW osm_poi_campsites_tmp RENAME TO osm_poi_campsites;
+ALTER INDEX osm_poi_campsites_geom_tmp RENAME TO osm_poi_campsites_geom;
+ALTER INDEX osm_poi_campsites_osm_id_tmp RENAME TO osm_poi_campsites_osm_id;
 
 GRANT SELECT ON osm_poi_campsites to public;
