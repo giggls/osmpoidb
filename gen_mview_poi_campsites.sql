@@ -42,7 +42,7 @@ SELECT    (-1*poly.osm_id)      AS osm_id,
           unify_tags(poly.tags) AS tags,
           'way' as osm_type,
           CASE WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
-               WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
+               WHEN ((poly.tags->'group_only' = 'yes') OR (poly.tags->'scout' = 'yes')) THEN 'group_only'
                WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
                WHEN ((poly.tags->'tents' = 'yes') AND (poly.tags->'caravans' = 'no')) THEN 'camping'
                WHEN ((poly.tags->'tents' = 'no') OR ( (poly.tags->'tourism' = 'caravan_site') AND NOT (poly.tags ? 'tents'))) THEN 'caravan'
@@ -83,7 +83,7 @@ SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
           unify_tags(poly.tags) AS tags,
           'relation' as osm_type,
           CASE WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
-               WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
+               WHEN ((poly.tags->'group_only' = 'yes') OR (poly.tags->'scout' = 'yes')) THEN 'group_only'
                WHEN poly.tags->'backcountry' = 'yes' THEN 'backcountry'
                WHEN ((poly.tags->'tents' = 'yes') AND (poly.tags->'caravans' = 'no')) THEN 'camping'
                WHEN ((poly.tags->'tents' = 'no') OR ( (poly.tags->'tourism' = 'caravan_site') AND NOT (poly.tags ? 'tents'))) THEN 'caravan'
@@ -126,7 +126,7 @@ SELECT    osm_id,
           unify_tags(tags) AS tags,
           'node' as osm_type,
           CASE WHEN tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
-               WHEN tags->'group_only' = 'yes' THEN 'group_only'
+               WHEN ((tags->'group_only' = 'yes') OR (tags->'scout' = 'yes')) THEN 'group_only'
                WHEN tags->'backcountry' = 'yes' THEN 'backcountry'
                WHEN ((tags->'tents' = 'yes') AND (tags->'caravans' = 'no')) THEN 'camping'
                WHEN ((tags->'tents' = 'no') OR ( (tags->'tourism' = 'caravan_site') AND NOT (tags ? 'tents'))) THEN 'caravan'
