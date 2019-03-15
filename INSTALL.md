@@ -8,8 +8,11 @@
 * Adjust imposm-data path in config.json to match your setup
 * Call import script (this will take a few hours)
   `./doimport.sh </path/to/planet-latest.osm.pbf> </path/to/config.json>`
+* Download countr_osm_grid.sql
+  `curl -s http://www.nominatim.org/data/country_grid.sql.gz |gzip -d >country_osm_grid.sql`
 * Execute SQL scripts on DB
   `psql -f gen_indexes.sql poi`
+  'psql -f country_osm_grid.sql`
   `psql -f gen_mview_poi_campsites.sql poi`
 * Manually run update.sh until it did catch up
   `./update.sh </path/to/config.json>`

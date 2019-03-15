@@ -2,9 +2,10 @@
 -- exchange keys according to mapping
 
 CREATE OR REPLACE FUNCTION
-unify_tags(tin hstore) returns hstore as $$
+unify_tags(tin hstore, geom geometry) returns hstore as $$
 DECLARE
  out hstore;
+ country text;
  tag text[];
  mapping CONSTANT text[][] := '{{booking,reservation},
                                 {contact:phone,phone},
@@ -20,6 +21,13 @@ BEGIN
       out = (out - tag[1]) || hstore(tag[2], out -> tag[1]);
     END IF;
   END LOOP;
+  -- add addr:country if not already available
+  IF NOT out ? 'addr:country' THEN
+    SELECT country_code INTO country FROM country_osm_grid WHERE st_contains(geometry, st_centroid(geom));
+    IF country IS NOT NULL THEN
+      out = out ||  hstore('addr:country',country);
+    END IF;
+  END IF;
   RETURN out;
 END
 $$ language plpgsql;
@@ -39,7 +47,7 @@ CREATE MATERIALIZED VIEW osm_poi_campsites_tmp AS
 SELECT    (-1*poly.osm_id)      AS osm_id,
           poly.geom             AS geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
-          unify_tags(poly.tags) AS tags,
+          unify_tags(poly.tags,poly.geom) AS tags,
           'way' as osm_type,
           CASE WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
@@ -80,7 +88,7 @@ UNION ALL
 SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
           poly.geom               AS geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
-          unify_tags(poly.tags) AS tags,
+          unify_tags(poly.tags,poly.geom) AS tags,
           'relation' as osm_type,
           CASE WHEN poly.tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN poly.tags->'group_only' = 'yes' THEN 'group_only'
@@ -123,7 +131,7 @@ UNION ALL
 SELECT    osm_id,
           geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
-          unify_tags(tags) AS tags,
+          unify_tags(tags,geom) AS tags,
           'node' as osm_type,
           CASE WHEN tags->'nudism' IN ('yes','obligatory','customary','designated') THEN 'nudist'
                WHEN tags->'group_only' = 'yes' THEN 'group_only'
