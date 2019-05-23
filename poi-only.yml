@@ -18,6 +18,9 @@ tables:
       leisure: [__any__]
       shop: [__any__]
       tourism: [__any__]
+      industrial: [__any__]
+      craft: [__any__]
+      man_made: [__any__]
 
   poi_point:
     fields:
@@ -37,6 +40,9 @@ tables:
       leisure: [__any__] 
       shop: [__any__]    
       tourism: [__any__] 
+      industrial: [__any__]
+      craft: [__any__]
+      man_made: [__any__]
 
 tags:
   exclude:
