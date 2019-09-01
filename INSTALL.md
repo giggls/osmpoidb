@@ -12,7 +12,7 @@
   `curl -s http://www.nominatim.org/data/country_grid.sql.gz |gzip -d >country_osm_grid.sql`
 * Execute SQL scripts on DB
   `psql -f gen_indexes.sql poi`
-  'psql -f country_osm_grid.sql`
+  `psql -f country_osm_grid.sql poi`
   `psql -f gen_mview_poi_campsites.sql poi`
 * Manually run update.sh until it did catch up
   `./update.sh </path/to/config.json>`
