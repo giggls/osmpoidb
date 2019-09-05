@@ -21,6 +21,8 @@ tables:
       industrial: [__any__]
       craft: [__any__]
       man_made: [__any__]
+      playground: [__any__]
+      healthcare: [__any__]
 
   poi_point:
     fields:
@@ -43,6 +45,8 @@ tables:
       industrial: [__any__]
       craft: [__any__]
       man_made: [__any__]
+      playground: [__any__]
+      healthcare: [__any__]
 
 tags:
   exclude:
