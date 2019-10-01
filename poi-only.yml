@@ -23,6 +23,7 @@ tables:
       man_made: [__any__]
       playground: [__any__]
       healthcare: [__any__]
+      emergency: [__any__]
 
   poi_point:
     fields:
@@ -47,6 +48,8 @@ tables:
       man_made: [__any__]
       playground: [__any__]
       healthcare: [__any__]
+      emergency: [__any__]
+      highway: [__any__]
 
 tags:
   exclude:
