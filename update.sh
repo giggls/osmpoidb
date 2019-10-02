@@ -13,8 +13,15 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-# this is json parsing for the poor :)
-DIFFDIR=$(grep diffdir $1 |cut -d : -f 2 |sed -e 's/,*[[:space:]]*$//' -e 's/^[[:space:]]*//' -e 's/^["'"'"']//' -e 's/["'"'"']$//')
+# check if commands we need are available
+for cmd in jq date find imposm; do
+  if ! command -v $cmd >/dev/null; then
+    echo "ERROR: command >>$cmd<< not found, please install!"
+    exit 1
+  fi
+done
+
+DIFFDIR="$(jq -r .diffdir $1)"
 
 if [ -z "$DIFFDIR" ]; then
   echo "diffdir not found in file $1" >&2
