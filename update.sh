@@ -8,8 +8,8 @@
 # in case of regular intervals and not in catch-up cycles
 #
 
-if [ $# -ne 1 ]; then
-  echo "uasge: doimport.sh <path/to/config.json>" >&2
+if [ $# -lt 1 ] || [ $# -gt 2 ]; then
+  echo "uasge: doimport.sh <path/to/config.json> ?post-replicate-script?" >&2
   exit 1
 fi
 
@@ -29,19 +29,32 @@ if [ -z "$DIFFDIR" ]; then
 fi
 
 if ! [ -d $DIFFDIR ]; then
-    echo "$DIFFDIR is not a directory"
-    exit 1
+  echo "$DIFFDIR is not a directory" >&2
+  exit 1
+fi
+
+# go to script directory
+cd $(dirname "$BASH_SOURCE")
+
+if [ $# -eq 2 ]; then
+  repl_script=$2  
+else
+  repl_script="post-replicate.sql"
+fi
+
+if ! [ -f $2 ]; then
+  echo "file >$2< not found" >&2
+  exit 1
 fi
 
 # DIFFDIR is now hopefully valid at this stage
-
 export IMPOSM3_SINGLE_DIFF=1
 
 function post_replication() {
   ts=$(date +%Y-%m-%dT%H:%M:%S%:z)
   timestamp=$(date +%s)
   echo "[$ts] 0:00:00 [info] post replication script started"
-  echo "REFRESH MATERIALIZED VIEW CONCURRENTLY osm_poi_campsites;" |psql poi --quiet
+  psql poi --quiet -f $repl_script
   # remove diff import files older than 2 hours
   find $DIFFDIR -type f \! -name "last.state.txt" -mmin +120 -exec rm {} \;
   ts=$(date +%Y-%m-%dT%H:%M:%S%:z)
