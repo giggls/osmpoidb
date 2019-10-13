@@ -3,7 +3,8 @@
 --
 
 CREATE MATERIALIZED VIEW osm_poi_playgrounds_tmp AS
-SELECT    (-1*poly.osm_id)      AS osm_id,
+SELECT    poly.osm_id as id,
+          (-1*poly.osm_id)      AS osm_id,
           poly.tags AS tags,
           poly.geom AS geom,
           'way' as osm_type,
@@ -22,7 +23,8 @@ GROUP BY  poly.osm_id,
           poly.tags,
           osm_type
 UNION ALL
-SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
+SELECT    poly.osm_id as id,
+          (-1*(poly.osm_id+1e17)) AS osm_id,
           poly.tags AS tags,
           poly.geom AS geom,
           'relation' as osm_type,
@@ -41,7 +43,8 @@ GROUP BY  poly.osm_id,
           poly.tags,
           osm_type
 UNION ALL
-SELECT    osm_id,
+SELECT    osm_id as id,
+          osm_id,
           tags,
           geom,
           'node' as osm_type,
@@ -54,7 +57,7 @@ WHERE     (tags->'leisure' = 'playground');
 CREATE INDEX osm_poi_playgrounds_geom_tmp ON osm_poi_playgrounds_tmp USING GIST (geom);
 -- index on osm_id (UNIQUE)
 -- This seems to be needed for CONCURRENTLY REFRESH of MATERIALIZED VIEW
-CREATE UNIQUE INDEX osm_poi_playgrounds_osm_id_tmp ON osm_poi_playgrounds_tmp (osm_id);
+CREATE UNIQUE INDEX osm_poi_playgrounds_osm_id_tmp ON osm_poi_playgrounds_tmp (id);
 
 -- this is hopefully atomic enough for a production setup
 DROP MATERIALIZED VIEW osm_poi_playgrounds;
