@@ -44,7 +44,8 @@ FROM      osm_poi_point;
 
 
 CREATE MATERIALIZED VIEW osm_poi_campsites_tmp AS
-SELECT    (-1*poly.osm_id)      AS osm_id,
+SELECT    poly.osm_id		AS id,
+          (-1*poly.osm_id)      AS osm_id,
           poly.geom             AS geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           unify_tags(poly.tags,poly.geom) AS tags,
@@ -87,7 +88,8 @@ GROUP BY  poly.osm_id,
           poly.geom,
           poly.tags
 UNION ALL
-SELECT    (-1*(poly.osm_id+1e17)) AS osm_id,
+SELECT    poly.osm_id             AS id,
+          (-1*(poly.osm_id+1e17)) AS osm_id,
           poly.geom               AS geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           unify_tags(poly.tags,poly.geom) AS tags,
@@ -132,7 +134,8 @@ GROUP BY  poly.osm_id,
           poly.tags
 
 UNION ALL
-SELECT    osm_id,
+SELECT    osm_id as id,
+          osm_id,
           geom,
 -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
           unify_tags(tags,geom) AS tags,
@@ -170,7 +173,7 @@ WHERE     (tags ? 'tourism') AND (tags->'tourism' in ('camp_site','caravan_site'
 CREATE INDEX osm_poi_campsites_geom_tmp ON osm_poi_campsites_tmp USING GIST (geom);
 -- index on osm_id (UNIQUE)
 -- This seems to be needed for CONCURRENTLY REFRESH of MATERIALIZED VIEW
-CREATE UNIQUE INDEX osm_poi_campsites_osm_id_tmp ON osm_poi_campsites_tmp (osm_id);
+CREATE UNIQUE INDEX osm_poi_campsites_osm_id_tmp ON osm_poi_campsites_tmp (id);
 
 -- this is hopefully atomic enough for a production setup
 DROP MATERIALIZED VIEW osm_poi_campsites;

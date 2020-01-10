@@ -21,6 +21,11 @@ tables:
       industrial: [__any__]
       craft: [__any__]
       man_made: [__any__]
+      healthcare: [__any__]
+      emergency: [__any__]
+      # It is IMO a bad tagging decision that we need those :(
+      playground: [__any__]
+      camp_site: [__any__]    
 
   poi_point:
     fields:
@@ -43,6 +48,12 @@ tables:
       industrial: [__any__]
       craft: [__any__]
       man_made: [__any__]
+      healthcare: [__any__]
+      emergency: [__any__]
+      highway: [__any__]
+      # It is IMO a bad tagging decision that we need those :(
+      playground: [__any__]
+      camp_site: [__any__]
 
 tags:
   exclude:

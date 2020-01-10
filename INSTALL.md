@@ -14,6 +14,7 @@
   `psql -f gen_indexes.sql poi`
   `psql -f country_osm_grid.sql poi`
   `psql -f gen_mview_poi_campsites.sql poi`
+  `psql -f gen_mview_poi_playgrounds.sql poi`
 * Manually run update.sh until it did catch up
   `./update.sh </path/to/config.json>`
 * press crtl-c and re-run as a systemd service using adapted imposm-update.service
