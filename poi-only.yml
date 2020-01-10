@@ -25,7 +25,14 @@ tables:
       emergency: [__any__]
       # It is IMO a bad tagging decision that we need those :(
       playground: [__any__]
-      camp_site: [__any__]    
+      camp_site: [__any__]
+    type: linestring
+    mapping:
+      historic: [__any__]
+      man_made: [__any__]
+      emergency: [__any__]
+      # It is IMO a bad tagging decision that we need those :(
+      playground: [__any__]     
 
   poi_point:
     fields:
