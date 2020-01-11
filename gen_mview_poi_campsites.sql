@@ -35,7 +35,7 @@ $$ language plpgsql;
 -- create MATERIALIZED VIEW to be used
 -- in json output
 
-CREATE OR REPLACE VIEW osm_poi_all AS
+CREATE OR REPLACE VIEW osm_poi_ptpy AS
 SELECT    osm_id,tags,geom
 FROM      osm_poi_poly
 UNION ALL
@@ -79,7 +79,7 @@ SELECT    poly.osm_id		AS id,
 -- This will produce a list of available sport facilities on the premises
 array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects(poly.geom, pt.geom) AND (pt.tags ? 'sport') AND (pt.osm_id != poly.osm_id)) THEN pt.tags->'sport' END),NULL) as sport
 FROM      osm_poi_poly                               AS poly
-LEFT JOIN osm_poi_all                                AS pt
+LEFT JOIN osm_poi_ptpy                                AS pt
 ON        poly.geom && pt.geom
 WHERE     (poly.tags ? 'tourism') AND (poly.tags->'tourism' in ('camp_site','caravan_site'))
 -- campsites from OSM ways
@@ -124,7 +124,7 @@ SELECT    poly.osm_id             AS id,
 array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects(poly.geom, pt.geom)
 AND       (pt.tags ? 'sport') AND (pt.osm_id != poly.osm_id)) THEN pt.tags->'sport' END),NULL) as sport
 FROM      osm_poi_poly                               AS poly
-LEFT JOIN osm_poi_all                                AS pt
+LEFT JOIN osm_poi_ptpy                                AS pt
 ON        poly.geom && pt.geom
 WHERE     (poly.tags ? 'tourism') AND (poly.tags->'tourism' in ('camp_site','caravan_site'))
 -- campsites from OSM relations

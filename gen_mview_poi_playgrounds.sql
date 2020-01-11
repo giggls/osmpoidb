@@ -2,6 +2,16 @@
 -- with list of equipment and sport facilities
 --
 
+CREATE OR REPLACE VIEW osm_poi_all AS
+SELECT    osm_id,tags,geom
+FROM      osm_poi_poly
+UNION ALL
+SELECT    osm_id,tags,geom
+FROM      osm_poi_point
+UNION ALL
+SELECT    osm_id,tags,geom
+FROM      osm_poi_line;
+
 CREATE MATERIALIZED VIEW osm_poi_playgrounds_tmp AS
 SELECT    poly.osm_id as id,
           (-1*poly.osm_id)      AS osm_id,

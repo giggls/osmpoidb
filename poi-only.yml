@@ -27,6 +27,22 @@ tables:
       playground: [__any__]
       camp_site: [__any__]    
 
+  poi_line:
+    fields:
+    - key: null
+      name: osm_id
+      type: id
+    - key: null
+      name: geom
+      type: geometry
+    - key: null
+      name: tags
+      type: hstore_tags
+    type: linestring
+    mapping:
+      # WTF, there are even line shapoed POI in OSM
+      playground: [__any__]
+
   poi_point:
     fields:
     - key: null
