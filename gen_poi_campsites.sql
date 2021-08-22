@@ -32,7 +32,7 @@ BEGIN
 END
 $$ language plpgsql;
 
--- create MATERIALIZED VIEW to be used
+-- create Table to be used
 -- in json output
 
 CREATE OR REPLACE VIEW osm_poi_ptpy AS
@@ -43,7 +43,7 @@ SELECT    osm_id,tags,geom
 FROM      osm_poi_point;
 
 
-CREATE MATERIALIZED VIEW osm_poi_campsites_tmp AS
+CREATE TABLE osm_poi_campsites_tmp AS
 SELECT    poly.osm_id		AS id,
           (-1*poly.osm_id)      AS osm_id,
           poly.geom             AS geom,
@@ -60,7 +60,7 @@ SELECT    poly.osm_id		AS id,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'post_box', false)) AS post_box,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
 -- any shop likely convenience
-          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND (pt.tags ? 'shop'), false)) AS shop,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND ((pt.tags ? 'shop') AND  pt.tags -> 'shop' != 'laundry'), false)) AS shop,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND ((pt.tags->'amenity' = 'washing_machine') OR (pt.tags->'shop' = 'laundry')), false)) AS laundry,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'sanitary_dump_station', false)) AS sanitary_dump_station,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'leisure' = 'firepit', false)) AS firepit,
@@ -132,7 +132,6 @@ WHERE     (poly.tags ? 'tourism') AND (poly.tags->'tourism' in ('camp_site','car
 GROUP BY  poly.osm_id,
           poly.geom,
           poly.tags
-
 UNION ALL
 SELECT    osm_id as id,
           osm_id,
@@ -171,14 +170,37 @@ WHERE     (tags ? 'tourism') AND (tags->'tourism' in ('camp_site','caravan_site'
 
 -- geometry index
 CREATE INDEX osm_poi_campsites_geom_tmp ON osm_poi_campsites_tmp USING GIST (geom);
--- index on osm_id (UNIQUE)
--- This seems to be needed for CONCURRENTLY REFRESH of MATERIALIZED VIEW
+
+-- index on osm_id (UNIQUE) maybee not needed
 CREATE UNIQUE INDEX osm_poi_campsites_osm_id_tmp ON osm_poi_campsites_tmp (id);
 
+GRANT SELECT ON osm_poi_campsites_tmp to public;
+
 -- this is hopefully atomic enough for a production setup
-DROP MATERIALIZED VIEW osm_poi_campsites;
-ALTER MATERIALIZED VIEW osm_poi_campsites_tmp RENAME TO osm_poi_campsites;
+BEGIN;
+DROP TABLE IF EXISTS osm_poi_campsites;
+ALTER TABLE osm_poi_campsites_tmp RENAME TO osm_poi_campsites;
 ALTER INDEX osm_poi_campsites_geom_tmp RENAME TO osm_poi_campsites_geom;
 ALTER INDEX osm_poi_campsites_osm_id_tmp RENAME TO osm_poi_campsites_osm_id;
+COMMIT;
 
-GRANT SELECT ON osm_poi_campsites to public;
+CREATE OR REPLACE FUNCTION
+imposm_type2uniqe_id(member_id bigint, imposm_type smallint) returns bigint as $$
+BEGIN
+  IF imposm_type = 2 THEN
+    RETURN (-1*(member_id+1e17));
+  END IF;
+  IF imposm_type = 1 THEN
+    RETURN (-1*member_id);
+  ELSE
+    RETURN member_id;
+  END IF;
+END
+$$ language plpgsql;
+
+CREATE OR REPLACE VIEW osm_poi_camp_siterel_unique AS
+  SELECT imposm_type2uniqe_id(member_id,osm_type) AS unique_member_id,*
+FROM osm_poi_camp_siterel;
+
+CREATE OR REPLACE VIEW osm_poi_camp_siterel_with_geom AS
+  SELECT p.geom, s.* FROM osm_poi_camp_siterel_unique s INNER JOIN osm_poi_ptpy p ON p.osm_id = s.unique_member_id;

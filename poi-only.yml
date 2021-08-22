@@ -70,6 +70,30 @@ tables:
       # It is IMO a bad tagging decision that we need those :(
       playground: [__any__]
       camp_site: [__any__]
+      
+  poi_camp_siterel:
+    fields:
+    - key: null
+      name: member_id
+      type: member_id
+    - key: null
+      name: site_id
+      type: id
+    - key: null
+      name: osm_type
+      type: member_type
+    - key: null
+      name: member_tags
+      type: hstore_tags
+      from_member: true
+    - key: null
+      name: site_tags
+      type: hstore_tags
+    type: relation_member
+    relation_types: [site]
+    mapping:
+      tourism : [camp_site]
+      site: [camp_site]
 
 tags:
   exclude:

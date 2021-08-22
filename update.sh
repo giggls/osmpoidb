@@ -9,7 +9,7 @@
 #
 
 if [ $# -lt 1 ] || [ $# -gt 2 ]; then
-  echo "uasge: doimport.sh <path/to/config.json> ?post-replicate-script?" >&2
+  echo "usage: doimport.sh <path/to/config.json> ?post-replicate-script?" >&2
   exit 1
 fi
 

@@ -20,7 +20,9 @@
 ```
   psql -f gen_indexes.sql poi
   psql -f country_osm_grid.sql poi
-  psql -f gen_mview_poi_campsites.sql poi
+  psql -f imposm_type2str.sql poi
+  psql -f gen_poi_campsites.sql poi
+  psql -f update-poi-campsites-from-siterel.sql poi
   psql -f gen_mview_poi_playgrounds.sql poi
  ```
 * Manually run update.sh until it did catch up
