@@ -15,6 +15,7 @@ import wsgiref.handlers
 import cgi
 import psycopg2
 import json
+from urllib.parse import parse_qs
 
 dbconnstr="dbname=poi"
 
@@ -128,7 +129,7 @@ def application(environ, start_response):
   if environ['REQUEST_METHOD'] == 'GET':
     if not 'QUERY_STRING' in environ:
       return([empty_geojson])
-    parms = cgi.parse_qs(environ.get('QUERY_STRING', ''))
+    parms = parse_qs(environ.get('QUERY_STRING', ''))
     bbox = parms.get('bbox')
     osm_id = parms.get('osm_id')
     osm_type = parms.get('osm_type')
