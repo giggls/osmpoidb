@@ -1,5 +1,5 @@
 # How to setup POI database
-## Tested with PostgreSQL 10 and 11
+## (development Platform is Debian 11, PostgreSQL 13, PostGIS 3.1)
 
 * Create database with postgis and hstore enabled
   ```
