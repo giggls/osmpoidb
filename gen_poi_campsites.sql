@@ -59,6 +59,7 @@ SELECT    poly.osm_id		AS id,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'telephone', false)) AS telephone,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'post_box', false)) AS post_box,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'power_supply', false)) AS power_supply,
 -- any shop likely convenience
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND ((pt.tags ? 'shop') AND  pt.tags -> 'shop' != 'laundry'), false)) AS shop,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND ((pt.tags->'amenity' = 'washing_machine') OR (pt.tags->'shop' = 'laundry')), false)) AS laundry,
@@ -103,6 +104,7 @@ SELECT    poly.osm_id             AS id,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'telephone', false)) AS telephone,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'post_box', false)) AS post_box,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'drinking_water', false)) AS drinking_water,
+          Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND pt.tags->'amenity' = 'power_supply', false)) AS power_supply,
 -- any shop likely convenience
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND (pt.tags ? 'shop'), false)) AS shop,
           Bool_or(COALESCE(_st_intersects(poly.geom, pt.geom) AND ((pt.tags->'amenity' = 'washing_machine') OR (pt.tags->'shop' = 'laundry')), false)) AS laundry,
@@ -145,6 +147,7 @@ SELECT    osm_id as id,
                WHEN ((tags->'tents' = 'yes') AND (tags->'caravans' = 'no')) THEN 'camping'
                WHEN ((tags->'tents' = 'no') OR ( (tags->'tourism' = 'caravan_site') AND NOT (tags ? 'tents'))) THEN 'caravan'
           ELSE 'standard' END AS category,
+          False,
           False,
           False,
           False,
