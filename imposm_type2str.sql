@@ -1,5 +1,6 @@
-CREATE OR REPLACE FUNCTION
-imposm_type2str(imposm_type smallint) returns text as $$ 
+CREATE OR REPLACE FUNCTION imposm_type2str (imposm_type smallint)
+  RETURNS text
+  AS $$
 BEGIN
   IF imposm_type = 0 THEN
     RETURN 'node';
@@ -12,4 +13,6 @@ BEGIN
   END IF;
   RETURN '';
 END
-$$ language plpgsql;
+$$
+LANGUAGE plpgsql;
+
