@@ -22,6 +22,7 @@ FROM (
   WHERE
     st_contains (o.geom, i.geom)
     AND o.osm_id != i.osm_id
+    AND (i.tags -> 'tourism' != 'caravan_site')
   GROUP BY
     o.osm_id,
     o.osm_type) si
@@ -46,6 +47,7 @@ FROM (
   WHERE
     st_contains (o.geom, i.geom)
     AND o.osm_id != i.osm_id
+    AND (i.tags -> 'tourism' != 'caravan_site')
   GROUP BY
     i.osm_id,
     i.osm_type) sc
