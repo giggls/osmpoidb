@@ -27,7 +27,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'node')
                               'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
                               'bbox', array[round(ST_XMin(geom)::numeric,7),round(ST_YMin(geom)::numeric,7),
                                             round(ST_XMax(geom)::numeric,7),round(ST_YMax(geom)::numeric,7)],
-                              'geometry',St_asgeojson(St_centroid(geom)) :: json, 'properties',
+                              'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
                               tags ::jsonb
                               || Json_build_object('category', category) ::jsonb
                               || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
@@ -54,7 +54,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'node')
                               )
                               ELSE Json_build_object('type', 'Feature',
                               'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
-                              'geometry',St_asgeojson(St_centroid(geom)) :: json, 'properties',
+                              'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
                               tags ::jsonb
                               || Json_build_object('category', category) ::jsonb
                               || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
