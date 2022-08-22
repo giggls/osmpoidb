@@ -84,7 +84,9 @@ SELECT
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'amenity' = 'post_box', FALSE)) AS post_box,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'drinking_water', FALSE)) AS drinking_water,
+      AND ((pt.tags -> 'amenity' = 'drinking_water')
+       OR ((pt.tags -> 'man_made' = 'water_tap') AND (pt.tags -> 'drinking_water' = 'yes'))
+       OR (pt.tags -> 'amenity' = 'water_point')), FALSE)) AS drinking_water,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'amenity' = 'power_supply', FALSE)) AS power_supply,
   -- any shop likely convenience
@@ -93,7 +95,7 @@ SELECT
       AND pt.tags -> 'shop' != 'laundry'), FALSE)) AS shop,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND ((pt.tags -> 'amenity' = 'washing_machine')
-      OR (pt.tags -> 'shop' = 'laundry')), FALSE)) AS laundry,
+       OR (pt.tags -> 'shop' = 'laundry')), FALSE)) AS laundry,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'amenity' = 'sanitary_dump_station', FALSE)) AS sanitary_dump_station,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
@@ -104,7 +106,7 @@ SELECT
       AND pt.tags -> 'amenity' = 'toilets', FALSE)) AS toilets,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND ((pt.tags -> 'amenity' = 'shower')
-      OR ((pt.tags -> 'amenity' = 'toilets')
+       OR ((pt.tags -> 'amenity' = 'toilets')
       AND (pt.tags ? 'shower')
       AND (pt.tags -> 'shower' != 'no'))), FALSE)) AS shower,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
@@ -173,7 +175,9 @@ SELECT
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'amenity' = 'post_box', FALSE)) AS post_box,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'drinking_water', FALSE)) AS drinking_water,
+      AND ((pt.tags -> 'amenity' = 'drinking_water')
+       OR ((pt.tags -> 'man_made' = 'water_tap') AND (pt.tags -> 'drinking_water' = 'yes'))
+       OR (pt.tags -> 'amenity' = 'water_point')), FALSE)) AS drinking_water,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'amenity' = 'power_supply', FALSE)) AS power_supply,
   -- any shop likely convenience
