@@ -22,9 +22,9 @@ dbconnstr="dbname=poi"
 sql_query="""
 SELECT Jsonb_build_object('type', 'FeatureCollection', 'features',
               coalesce(json_agg(features.feature), '[]'::json))
-FROM   (SELECT CASE WHEN (osm_type != 'node')
+FROM   (SELECT CASE WHEN (osm_type != 'N')
                               THEN Json_build_object('type', 'Feature',
-                              'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
+                              'id', 'https://www.openstreetmap.org/' || CASE WHEN osm_type = 'W' THEN 'way/' ELSE 'relation/' END || osm_id,
                               'bbox', array[round(ST_XMin(geom)::numeric,7),round(ST_YMin(geom)::numeric,7),
                                             round(ST_XMax(geom)::numeric,7),round(ST_YMax(geom)::numeric,7)],
                               'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
@@ -53,7 +53,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'node')
                               || CASE when sport != '{}' THEN Json_build_object('sport',sport) ELSE '{}' END ::jsonb
                               )
                               ELSE Json_build_object('type', 'Feature',
-                              'id', 'https://www.openstreetmap.org/' || osm_type || '/' || osm_id,
+                              'id', 'https://www.openstreetmap.org/node/' || osm_id,
                               'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
                               tags ::jsonb
                               || Json_build_object('category', category) ::jsonb
@@ -175,7 +175,7 @@ def application(environ, start_response):
     q = sql_where_bbox % (coords[0],coords[1],coords[2],coords[3])
     q = sql_query % q
   else:
-    q = sql_where_id % (osm_id[0],osm_type[0])
+    q = sql_where_id % (osm_id[0],osm_type[0][0].upper())
     q = sql_query % q
   
   cur = conn.cursor()

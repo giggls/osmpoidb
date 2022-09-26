@@ -15,7 +15,7 @@ FROM (
   SELECT
     o.osm_id AS id_outer,
     o.osm_type AS type_outer,
-    string_agg('http://osm.org/' || i.osm_type || '/' || i.osm_id::text, ' ') AS urls_inner
+    string_agg('https://osm.org/' || CASE WHEN i.osm_type = 'W' THEN 'way/' WHEN i.osm_type = 'N' THEN 'node/' ELSE 'relation/' END || i.osm_id::text, ' ') AS urls_inner
   FROM
     osm_poi_campsites o,
     osm_poi_campsites i
@@ -40,7 +40,7 @@ FROM (
   SELECT
     i.osm_id AS id_inner,
     i.osm_type AS type_inner,
-    string_agg('http://osm.org/' || o.osm_type || '/' || o.osm_id::text, ' ') AS urls_outer
+    string_agg('https://osm.org/' || CASE WHEN o.osm_type = 'W' THEN 'way/' WHEN o.osm_type = 'N' THEN 'node/' ELSE 'relation/' END || o.osm_id::text, ' ') AS urls_outer
   FROM
     osm_poi_campsites o,
     osm_poi_campsites i
