@@ -1,2 +1,3 @@
 *.pbf
 country_osm_grid.sql
+flatnode*

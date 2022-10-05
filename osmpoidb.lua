@@ -135,7 +135,13 @@ tables.siterel = osm2pgsql.define_table{
         { column = 'member_id', type = 'bigint' },
         { column = 'member_type', type = 'text' },
         { column = 'site_tags',  type = 'hstore' }
-    }    
+    }
+}
+
+tables.todocs = osm2pgsql.define_table{
+    name = 'osm_todo_campsites',
+    ids = { type = 'any', id_column = 'osm_id', type_column = 'osm_type' },
+    columns = {{ column = 'is_cs', type = 'bool' }}
 }
 
 -- Debug output: Show definition of tables
@@ -156,6 +162,19 @@ function osm2pgsql.process_node(object)
 
     unify_keys(object.tags)
 
+    if (osm2pgsql.mode == 'append') then
+      local is_cs = false;
+      if contains({'caravan_site','camp_site'},object.tags.tourism) then
+        is_cs = true;
+      end
+
+      tables.todocs:add_row({
+        osm_id = object.id,
+        osm_type = object.type,
+        is_cs = is_cs
+      })
+    end
+
     tables.point:add_row({
         tags = object.tags,
         timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
@@ -174,6 +193,19 @@ function osm2pgsql.process_way(object)
     end
 
     unify_keys(object.tags)
+
+    if (osm2pgsql.mode == 'append') then
+      local is_cs = false;
+      if contains({'caravan_site','camp_site'},object.tags.tourism) then
+        is_cs = true;
+      end
+
+      tables.todocs:add_row({
+        osm_id = object.id,
+        osm_type = object.type,
+        is_cs = is_cs
+      })
+    end
 
     -- Very simple check to decide whether a way is a polygon or not.
     -- Good enough in this case as we have only a small list of allowed tags
@@ -206,8 +238,8 @@ function osm2pgsql.process_relation(object)
     end
     
     if object.tags.type == 'site' then
-      if object.tags.tourism == 'camp_site' or
-         object.tags.site == 'camp_site' then
+      if contains({'caravan_site','camp_site'},object.tags.tourism) or
+         contains({'caravan_site','camp_site'},object.tags.site) then
          for _,member in ipairs(object.members) do
            tables.siterel:insert({
              member_id = member.ref,
@@ -223,6 +255,17 @@ function osm2pgsql.process_relation(object)
     -- Store multipolygons and boundaries as polygons
     if object.tags.type == 'multipolygon' or
        object.tags.type == 'boundary' then
+         if (osm2pgsql.mode == 'append') then
+           local is_cs = false;
+           if contains({'caravan_site','camp_site'},object.tags.tourism) then
+             is_cs = true;
+           end
+           tables.todocs:add_row({
+             osm_id = object.id,
+             osm_type = object.type,
+             is_cs = is_cs
+           })
+         end
          tables.polygon:add_row({
             tags = object.tags,
             timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),

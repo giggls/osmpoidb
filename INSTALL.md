@@ -1,28 +1,53 @@
 # How to setup POI database
 ## (development Platform is Debian 11, PostgreSQL 13, PostGIS 3.1)
 
+* Install requiered Software Packages
+```
+apt install -t bullseye-backports osm2pgsql rtorrent curl
+```
+
+* Create a user for replication
+```
+adduser --system --group osm
+```
+
 * Create database with postgis and hstore enabled
   ```
-  createdb -O <yourowner> poi
-  echo "CREATE EXTENSION postgis;" |psql poi
+  sudo -u postgres createuser osm
+  sudo -u postgres createdb -O osm poi
+  sudo -u postgres psql -c 'CREATE EXTENSION postgis;' poi
+  sudo -u osm psql -c 'CREATE EXTENSION hstore;' poi
+
   ```
-* Install osm2pgsql 1.7.0 or higher
+
+* Prepare data directory
+  ```
+  mkdir -p /opt/osm2pgsql/data
+  chown -r osm:osm /opt/osm2pgsql
+  ``
+
+* Download Planetfile and countr_osm_grid.sql into data directory
+  ```
+  rtorrent https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent
+  curl -s https://nominatim.org/data/country_grid.sql.gz |gzip -d >/opt/osm2pgsql/data/country_osm_grid.sql
+  
+  ```
 
 * Run initial database import
+  ```
+  cd /opt/osm2pgsql
+  git clone github.com/giggls/osmpoidb
+  sudo -u osm osmpoidb/import.sh /opt/osm2pgsql/data/planet-latest.osm.pbf
+  ```  
 
-* Download countr_osm_grid.sql
-```
-  curl -s http://www.nominatim.org/data/country_grid.sql.gz |gzip -d >country_osm_grid.sql
-```
-* Execute SQL scripts on DB:
-```
-  psql -f gen_indexes.sql poi
-  psql -f country_osm_grid.sql poi
-  psql -f gen_poi_campsites.sql poi
-  psql -f update-poi-campsites-from-siterel.sql poi
-  psql -f update-poi-campsites-with-bugs.sql poi
-  psql -f gen_mview_poi_playgrounds.sql poi
- ```
+* Init replication
+  ```
+  sudo -u osm osm2pgsql-replication init -d poi --server https://planet.openstreetmap.org/replication/minute
 
+  ```  
 
+* Run update
+  ```
+  sudo -u osm /opt/osm2pgsql/osmpoidb/run-osm2pgsql-replication.sh
+  ```
 
