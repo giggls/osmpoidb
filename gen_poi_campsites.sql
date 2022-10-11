@@ -1,5 +1,4 @@
--- unification function for inconsistent tagging
--- exchange keys according to mapping
+-- add country to tags
 CREATE OR REPLACE FUNCTION unify_tags (tin hstore, geom geometry)
   RETURNS hstore
   AS $$

@@ -16,6 +16,11 @@ ON CONFLICT (osm_id,osm_type) DO NOTHING;
 
 DELETE FROM osm_todo_campsites WHERE is_cs=false;
 
+INSERT INTO osm_todo_campsites(osm_id,osm_type,is_cs)
+SELECT osm_id,osm_type,true
+FROM osm_todo_cs_trigger
+ON CONFLICT (osm_id,osm_type) DO NOTHING;
+
 DELETE FROM osm_poi_campsites
 USING osm_todo_campsites
 WHERE osm_poi_campsites.osm_id = osm_todo_campsites.osm_id

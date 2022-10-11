@@ -37,7 +37,7 @@ adduser --system --group osm
   ```
   cd /opt/osm2pgsql
   git clone github.com/giggls/osmpoidb
-  sudo -u osm osmpoidb/import.sh /opt/osm2pgsql/data/planet-latest.osm.pbf
+  sudo -u osm osmpoidb/doimport.sh /opt/osm2pgsql/data/planet-latest.osm.pbf
   ```  
 
 * Init replication
@@ -46,8 +46,10 @@ adduser --system --group osm
 
   ```  
 
-* Run update
+* Enable update service
   ```
-  sudo -u osm /opt/osm2pgsql/osmpoidb/run-osm2pgsql-replication.sh
+  cp poidb-update.* /etc/systemd/system
+  systemctl enable poidb-update.timer
+  systemctl start poidb-update.timer
   ```
 

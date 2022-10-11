@@ -1,0 +1,9 @@
+[Unit]
+Description=Call osm2pgsql replication script
+
+[Service]
+Type=simple
+User=osm
+Group=osm
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+ExecStart=/opt/osm2pgsql/osmpoidb/run-osm2pgsql-replication.sh

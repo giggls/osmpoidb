@@ -7,6 +7,7 @@
 -- merge tags from site relation itself into tags from related point or polygon
 -- tagged as 'tourism'='camp_site'
 -- this will prefer the tags from the site relation over the ones from the point or polygon
+
 UPDATE
   osm_poi_campsites cs
 SET

@@ -252,9 +252,8 @@ function osm2pgsql.process_relation(object)
 
     unify_keys(object.tags)
     
-    -- Store multipolygons and boundaries as polygons
-    if object.tags.type == 'multipolygon' or
-       object.tags.type == 'boundary' then
+    -- Store multipolygons as polygons
+    if object.tags.type == 'multipolygon' then
          if (osm2pgsql.mode == 'append') then
            local is_cs = false;
            if contains({'caravan_site','camp_site'},object.tags.tourism) then
