@@ -82,9 +82,6 @@ function unify_keys(tags)
       tags[k]=nil;
     end
   end
-  if (tags['addr:country'] ~= nil) then
-    
-  end
 end
 
 -- The global variable "osm2pgsql" is used to talk to the main osm2pgsql code.
@@ -234,7 +231,7 @@ end
 -- (`object.members`).
 function osm2pgsql.process_relation(object)
 
-    if not (has_any_of(object.tags, allowed_polygon_tags)) then
+    if not (has_any_of(object.tags, allowed_polygon_tags)) and not (object.tags.type == 'site') then
         return
     end
     
