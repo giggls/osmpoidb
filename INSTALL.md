@@ -3,7 +3,8 @@
 
 * Install requiered Software Packages
 ```
-apt install -t bullseye-backports osm2pgsql rtorrent curl
+apt install rtorrent curl sudo
+apt install -t bullseye-backports osm2pgsql
 ```
 
 * Create a user for replication
@@ -28,6 +29,7 @@ adduser --system --group osm
 
 * Download Planetfile and countr_osm_grid.sql into data directory
   ```
+  cd /opt/osm2pgsql/data
   rtorrent https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent
   curl -s https://nominatim.org/data/country_grid.sql.gz |gzip -d >/opt/osm2pgsql/data/country_osm_grid.sql
   
@@ -37,7 +39,7 @@ adduser --system --group osm
   ```
   cd /opt/osm2pgsql
   git clone github.com/giggls/osmpoidb
-  sudo -u osm osmpoidb/doimport.sh /opt/osm2pgsql/data/planet-latest.osm.pbf
+  sudo -u osm osmpoidb/doimport.sh /opt/osm2pgsql/data/planet*.pbf
   ```  
 
 * Init replication

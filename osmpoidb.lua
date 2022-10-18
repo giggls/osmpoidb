@@ -132,6 +132,7 @@ tables.siterel = osm2pgsql.define_table{
     ids = { type = 'relation', id_column = 'site_id'},
     columns = {
         { column = 'id', sql_type = 'serial', create_only=true },
+        { column = 'timestamp', sql_type = 'timestamp' },
         { column = 'member_id', type = 'bigint' },
         { column = 'member_type', type = 'text' },
         { column = 'site_tags',  type = 'hstore' }
@@ -237,6 +238,8 @@ function osm2pgsql.process_relation(object)
         return
     end
     
+    unify_keys(object.tags)
+    
     if object.tags.type == 'site' then
       if contains({'caravan_site','camp_site'},object.tags.tourism) or
          contains({'caravan_site','camp_site'},object.tags.site) then
@@ -244,13 +247,12 @@ function osm2pgsql.process_relation(object)
            tables.siterel:insert({
              member_id = member.ref,
              member_type = string.upper(member.type),
-             site_tags = object.tags 
+             site_tags = object.tags,
+             timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp)
            })
          end
       end
     end
-
-    unify_keys(object.tags)
     
     -- Store multipolygons as polygons
     if object.tags.type == 'multipolygon' then

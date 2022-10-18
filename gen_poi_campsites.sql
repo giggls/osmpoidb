@@ -45,6 +45,7 @@ SELECT
   poly.osm_id AS osm_id,
   poly.geom AS geom,
   unify_tags (poly.tags, poly.geom) AS tags,
+  greatest(max(CASE WHEN _st_intersects(poly.geom, pt.geom) THEN pt.timestamp END),poly.timestamp) as timestamp,
   poly.osm_type AS osm_type,
   CASE WHEN poly.tags -> 'nudism' IN ('yes', 'obligatory', 'customary', 'designated') THEN
     'nudist'
@@ -111,6 +112,10 @@ SELECT
       AND pt.tags -> 'amenity' = 'pub', FALSE)) AS pub,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'amenity' = 'bar', FALSE)) AS bar,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND pt.tags -> 'building' = 'cabin', FALSE)) AS cabin,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND pt.tags -> 'building' = 'static_caravan', FALSE)) AS static_caravan,
   -- This will produce a list of available sport facilities on the premises
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'sport')
@@ -126,13 +131,15 @@ GROUP BY
   poly.osm_id,
   poly.osm_type,
   poly.geom,
-  poly.tags
+  poly.tags,
+  poly.timestamp
 UNION ALL
 SELECT
   osm_id,
   geom,
   -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
   unify_tags (tags, geom) AS tags,
+  timestamp,
   osm_type,
   CASE WHEN tags -> 'nudism' IN ('yes', 'obligatory', 'customary', 'designated') THEN
     'nudist'
@@ -151,6 +158,8 @@ SELECT
   ELSE
     'standard'
   END AS category,
+  FALSE,
+  FALSE,
   FALSE,
   FALSE,
   FALSE,

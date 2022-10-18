@@ -2,7 +2,7 @@
 #
 # Initial database import script for osmpoidb
 #
-# (c) 2021 Sven Geggus <sven-osm@geggus-net>
+# (c) 2022 Sven Geggus <sven-osm@geggus-net>
 #
 if [ $# -ne 1 ]; then
    echo "usage: $0 /path/to/planetfile" >&2
@@ -19,7 +19,7 @@ cd $DATA_DIR
 rm -f flatnode.dat
 
 psql -f country_osm_grid.sql $DBNAME
-osm2pgsql -s -F flatnode.dat -O flex -S $CODE_DIR/osmpoidb.lua -d $DBNAME $1
+osm2pgsql -x -s -F flatnode.dat -O flex -S $CODE_DIR/osmpoidb.lua -d $DBNAME $1
 psql -f $CODE_DIR/gen_indexes.sql $DBNAME
 psql -f $CODE_DIR/gen_poi_campsites.sql $DBNAME
 psql -f $CODE_DIR/update-poi-campsites-from-siterel.sql $DBNAME

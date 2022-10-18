@@ -21,6 +21,8 @@ SELECT osm_id,osm_type,true
 FROM osm_todo_cs_trigger
 ON CONFLICT (osm_id,osm_type) DO NOTHING;
 
+BEGIN;
+
 DELETE FROM osm_poi_campsites
 USING osm_todo_campsites
 WHERE osm_poi_campsites.osm_id = osm_todo_campsites.osm_id
@@ -31,6 +33,7 @@ SELECT
   poly.osm_id AS osm_id,
   poly.geom AS geom,
   unify_tags (poly.tags, poly.geom) AS tags,
+  greatest(max(CASE WHEN _st_intersects(poly.geom, pt.geom) THEN pt.timestamp END),poly.timestamp) as timestamp,
   poly.osm_type AS osm_type,
   CASE WHEN poly.tags -> 'nudism' IN ('yes', 'obligatory', 'customary', 'designated') THEN
     'nudist'
@@ -97,6 +100,10 @@ SELECT
       AND pt.tags -> 'amenity' = 'pub', FALSE)) AS pub,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'amenity' = 'bar', FALSE)) AS bar,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND pt.tags -> 'building' = 'cabin', FALSE)) AS cabin,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND pt.tags -> 'building' = 'static_caravan', FALSE)) AS static_caravan,
   -- This will produce a list of available sport facilities on the premises
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'sport')
@@ -113,13 +120,15 @@ GROUP BY
   poly.osm_id,
   poly.osm_type,
   poly.geom,
-  poly.tags
+  poly.tags,
+  poly.timestamp
 UNION ALL
 SELECT
   pp.osm_id,
   pp.geom,
   -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
   unify_tags (pp.tags, pp.geom) AS tags,
+  pp.timestamp,
   pp.osm_type,
   CASE WHEN pp.tags -> 'nudism' IN ('yes', 'obligatory', 'customary', 'designated') THEN
     'nudist'
@@ -158,10 +167,14 @@ SELECT
   FALSE,
   FALSE,
   FALSE,
+  FALSE,
+  FALSE,
   '{}'
 FROM
   osm_todo_campsites tc,
   osm_poi_point pp
 WHERE pp.osm_id=tc.osm_id AND pp.osm_type=tc.osm_type;
+
+COMMIT;
 
 DELETE FROM osm_todo_campsites;

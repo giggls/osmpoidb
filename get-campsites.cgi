@@ -77,6 +77,8 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb
                               || CASE when pub = True THEN Json_build_object('pub','yes') ELSE '{}' END ::jsonb
                               || CASE when bar = True THEN Json_build_object('bar','yes') ELSE '{}' END ::jsonb
+                              || CASE when static_caravan = True THEN Json_build_object('static_caravans','yes') ELSE '{}' END ::jsonb
+                              || CASE when cabin = True THEN Json_build_object('cabins','yes') ELSE '{}' END ::jsonb
                               || CASE when sport != '{}' THEN Json_build_object('sport',sport) ELSE '{}' END ::jsonb
                               )
                               END
