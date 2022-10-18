@@ -1,4 +1,5 @@
--- add country to tags
+-- add or unify addr:country tag
+-- make sure country tag is always lowercase
 CREATE OR REPLACE FUNCTION unify_tags (tin hstore, geom geometry)
   RETURNS hstore
   AS $$
@@ -19,6 +20,20 @@ BEGIN
     IF country IS NOT NULL THEN
       out = out || hstore ('addr:country', country);
     END IF;
+  ELSE
+     IF (LENGTH(out->'addr:country') = 2) THEN
+       out = out || hstore ('addr:country', lower(out->'addr:country'));
+     ELSE
+       SELECT
+         country_code INTO country
+       FROM
+         country_osm_grid
+       WHERE
+         st_contains (geometry, st_centroid (geom));
+       IF country IS NOT NULL THEN
+         out = out || hstore ('addr:country', country);
+       END IF;
+     END IF;
   END IF;
   RETURN out;
 END
@@ -39,8 +54,7 @@ SELECT * FROM osm_poi_point
 UNION ALL
 SELECT * FROM osm_poi_line;
 
-
-CREATE TABLE osm_poi_campsites_tmp AS
+CREATE TABLE osm_poi_campsites AS
 SELECT
   poly.osm_id AS osm_id,
   poly.geom AS geom,
@@ -187,24 +201,15 @@ WHERE (tags ? 'tourism')
 AND (tags -> 'tourism' IN ('camp_site', 'caravan_site'));
 
 -- geometry index
-CREATE INDEX osm_poi_campsites_geom_tmp ON osm_poi_campsites_tmp USING GIST (geom);
+CREATE INDEX osm_poi_campsites_geom ON osm_poi_campsites USING GIST (geom);
 
 -- index on osm_id (UNIQUE) maybe not needed
---CREATE UNIQUE INDEX osm_poi_campsites_osm_id_tmp ON osm_poi_campsites_tmp (id);
+--CREATE UNIQUE INDEX osm_poi_campsites_osm_id ON osm_poi_campsites (id);
 
 -- index on osm_type
-CREATE INDEX osm_poi_campsites_osm_type_tmp ON osm_poi_campsites_tmp (osm_type);
+CREATE INDEX osm_poi_campsites_osm_type ON osm_poi_campsites (osm_type);
 
-GRANT SELECT ON osm_poi_campsites_tmp TO public;
-
--- this is hopefully atomic enough for a production setup
-BEGIN;
-DROP TABLE IF EXISTS osm_poi_campsites;
-ALTER TABLE osm_poi_campsites_tmp RENAME TO osm_poi_campsites;
-ALTER INDEX osm_poi_campsites_geom_tmp RENAME TO osm_poi_campsites_geom;
--- ALTER INDEX osm_poi_campsites_osm_id_tmp RENAME TO osm_poi_campsites_osm_id;
-ALTER INDEX osm_poi_campsites_osm_type_tmp RENAME TO osm_poi_campsites_osm_type;
-COMMIT;
+GRANT SELECT ON osm_poi_campsites TO public;
 
 -- extend osm_poi_camp_siterel with geometry and member tags
 CREATE OR REPLACE VIEW osm_poi_camp_siterel_extended AS

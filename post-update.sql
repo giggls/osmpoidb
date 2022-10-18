@@ -1,3 +1,4 @@
+-- Post update stuff for TABLE osm_poi_campsites
 
 -- This will insert all campsites which are affected by other POI updates
 INSERT INTO osm_todo_campsites(osm_id,osm_type,is_cs)
@@ -22,7 +23,6 @@ FROM osm_todo_cs_trigger
 ON CONFLICT (osm_id,osm_type) DO NOTHING;
 
 BEGIN;
-
 DELETE FROM osm_poi_campsites
 USING osm_todo_campsites
 WHERE osm_poi_campsites.osm_id = osm_todo_campsites.osm_id
@@ -174,7 +174,86 @@ FROM
   osm_todo_campsites tc,
   osm_poi_point pp
 WHERE pp.osm_id=tc.osm_id AND pp.osm_type=tc.osm_type;
-
 COMMIT;
 
 DELETE FROM osm_todo_campsites;
+DELETE FROM osm_todo_cs_trigger;
+
+-- Post update stuff for TABLE osm_poi_playgrounds
+
+-- This will insert all playgrounds which are affected by other POI updates
+INSERT INTO osm_todo_playgrounds(osm_id,osm_type,is_pg)
+SELECT pa.osm_id,pa.osm_type,true
+FROM osm_poi_all pa,
+(
+SELECT pa.osm_type,pa.osm_id,pa.geom
+FROM osm_poi_all pa
+JOIN osm_todo_playgrounds tp
+ON tp.osm_id=pa.osm_id AND tp.osm_type=pa.osm_type
+WHERE tp.is_pg=false
+) as tp
+WHERE (pa.tags -> 'leisure' = 'playground')
+AND ST_Intersects(tp.geom,pa.geom)
+ON CONFLICT (osm_id,osm_type) DO NOTHING;
+
+DELETE FROM osm_todo_playgrounds WHERE is_pg=false;
+
+INSERT INTO osm_todo_playgrounds(osm_id,osm_type,is_pg)
+SELECT osm_id,osm_type,true
+FROM osm_todo_pg_trigger
+ON CONFLICT (osm_id,osm_type) DO NOTHING;
+
+BEGIN;
+DELETE FROM osm_poi_playgrounds
+USING osm_todo_playgrounds
+WHERE osm_poi_playgrounds.osm_id = osm_todo_playgrounds.osm_id
+AND osm_poi_playgrounds.osm_type = osm_todo_playgrounds.osm_type;
+
+INSERT INTO osm_poi_playgrounds
+SELECT
+  poly.osm_id AS osm_id,
+  poly.osm_type AS osm_type,
+  poly.tags AS tags,
+  greatest(max(CASE WHEN _st_intersects(poly.geom, pt.geom) THEN pt.timestamp END),poly.timestamp) as timestamp,
+  poly.geom AS geom,
+  -- This will produce a list of available playground facilities on the premises
+  array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
+        AND (pt.tags ? 'playground')
+        AND (pt.osm_id != poly.osm_id)) THEN
+        pt.tags -> 'playground'
+      END), NULL) AS equipment,
+  -- This will produce a list of available sport facilities on the premises
+  array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
+        AND (pt.tags ? 'sport')
+        AND (pt.osm_id != poly.osm_id)) THEN
+        pt.tags -> 'sport'
+      END), NULL) AS sport
+FROM
+  osm_todo_playgrounds tp,
+  osm_poi_poly AS poly
+  LEFT JOIN osm_poi_ptpy AS pt ON poly.geom && pt.geom
+WHERE
+  poly.osm_id=tp.osm_id AND poly.osm_type=tp.osm_type
+GROUP BY
+  poly.osm_id,
+  poly.osm_type,
+  poly.tags,
+  poly.timestamp,
+  poly.geom
+UNION ALL
+SELECT
+  pp.osm_id,
+  pp.osm_type,
+  pp.tags,
+  pp.timestamp,
+  pp.geom,
+  '{}',
+  '{}'
+FROM
+  osm_todo_playgrounds tp,
+  osm_poi_point pp
+WHERE pp.osm_id=tp.osm_id AND pp.osm_type=tp.osm_type;
+COMMIT;
+
+DELETE FROM osm_todo_playgrounds;
+DELETE FROM osm_todo_pg_trigger;

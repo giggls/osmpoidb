@@ -1,11 +1,12 @@
--- create MATERIALIZED VIEW osm_poi_playgrounds
+-- create TABLE osm_poi_playgrounds
 -- with list of equipment and sport facilities
 --
-CREATE MATERIALIZED VIEW osm_poi_playgrounds_tmp AS
+CREATE TABLE osm_poi_playgrounds AS
 SELECT
   poly.osm_id AS osm_id,
   poly.osm_type AS osm_type,
   poly.tags AS tags,
+  greatest(max(CASE WHEN _st_intersects(poly.geom, pt.geom) THEN pt.timestamp END),poly.timestamp) as timestamp,
   poly.geom AS geom,
   -- This will produce a list of available playground facilities on the premises
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
@@ -27,12 +28,14 @@ GROUP BY
   poly.osm_id,
   poly.osm_type,
   poly.geom,
-  poly.tags
+  poly.tags,
+  poly.timestamp
 UNION ALL
 SELECT
   osm_id,
   osm_type,
   tags,
+  timestamp,
   geom,
   '{}',
   '{}'
@@ -41,20 +44,13 @@ FROM
 WHERE (tags -> 'leisure' = 'playground');
 
 -- geometry index
-CREATE INDEX osm_poi_playgrounds_geom_tmp ON osm_poi_playgrounds_tmp USING GIST (geom);
+CREATE INDEX osm_poi_playgrounds_geom ON osm_poi_playgrounds USING GIST (geom);
 
--- index on osm_id (UNIQUE)
--- This seems to be needed for CONCURRENTLY REFRESH of MATERIALIZED VIEW
-CREATE UNIQUE INDEX osm_poi_playgrounds_osm_id_tmp ON osm_poi_playgrounds_tmp (osm_id,osm_type);
+-- index on osm_id (UNIQUE) maybe not needed
+--CREATE UNIQUE INDEX osm_poi_playgrounds_osm_id ON osm_poi_playgrounds (id);
 
--- this is hopefully atomic enough for a production setup
-DROP MATERIALIZED VIEW osm_poi_playgrounds;
-
-ALTER MATERIALIZED VIEW osm_poi_playgrounds_tmp RENAME TO osm_poi_playgrounds;
-
-ALTER INDEX osm_poi_playgrounds_geom_tmp RENAME TO osm_poi_playgrounds_geom;
-
-ALTER INDEX osm_poi_playgrounds_osm_id_tmp RENAME TO osm_poi_playgrounds_osm_id;
+-- index on osm_type
+CREATE INDEX osm_poi_playgrounds_osm_type ON osm_poi_playgrounds (osm_type);
 
 GRANT SELECT ON osm_poi_playgrounds TO public;
 

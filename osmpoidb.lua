@@ -142,11 +142,42 @@ tables.todocs = osm2pgsql.define_table{
     columns = {{ column = 'is_cs', type = 'bool' }}
 }
 
+tables.todopg = osm2pgsql.define_table{
+    name = 'osm_todo_playgrounds',
+    ids = { type = 'any', id_column = 'osm_id', type_column = 'osm_type' },
+    columns = {{ column = 'is_pg', type = 'bool' }}
+}
+
 -- Debug output: Show definition of tables
 for name, table in pairs(tables) do
     print("\ntable '" .. name .. "':")
     print("  name='" .. table:name() .. "'")
 --    print("  columns=" .. inspect(table:columns()))
+end
+
+-- In append mode add new objects into to tables to be processed
+-- in post-update SQL script
+function fill_todo_tables(object)
+
+      local is_cs = false;
+      if contains({'caravan_site','camp_site'},object.tags.tourism) then
+        is_cs = true;
+      end
+      tables.todocs:add_row({
+        osm_id = object.id,
+        osm_type = object.type,
+        is_cs = is_cs
+      })
+
+      local is_pg = false;
+      if (object.tags.leisure == 'playground') then
+        is_pg = true;
+      end
+      tables.todopg:add_row({
+        osm_id = object.id,
+        osm_type = object.type,
+        is_pg = is_pg
+      })
 end
 
 -- Called for every node in the input. The `object` argument contains all the
@@ -161,16 +192,7 @@ function osm2pgsql.process_node(object)
     unify_keys(object.tags)
 
     if (osm2pgsql.mode == 'append') then
-      local is_cs = false;
-      if contains({'caravan_site','camp_site'},object.tags.tourism) then
-        is_cs = true;
-      end
-
-      tables.todocs:add_row({
-        osm_id = object.id,
-        osm_type = object.type,
-        is_cs = is_cs
-      })
+        fill_todo_tables(object)
     end
 
     tables.point:add_row({
@@ -193,16 +215,7 @@ function osm2pgsql.process_way(object)
     unify_keys(object.tags)
 
     if (osm2pgsql.mode == 'append') then
-      local is_cs = false;
-      if contains({'caravan_site','camp_site'},object.tags.tourism) then
-        is_cs = true;
-      end
-
-      tables.todocs:add_row({
-        osm_id = object.id,
-        osm_type = object.type,
-        is_cs = is_cs
-      })
+        fill_todo_tables(object)
     end
 
     -- Very simple check to decide whether a way is a polygon or not.
@@ -254,15 +267,7 @@ function osm2pgsql.process_relation(object)
     -- Store multipolygons as polygons
     if object.tags.type == 'multipolygon' then
          if (osm2pgsql.mode == 'append') then
-           local is_cs = false;
-           if contains({'caravan_site','camp_site'},object.tags.tourism) then
-             is_cs = true;
-           end
-           tables.todocs:add_row({
-             osm_id = object.id,
-             osm_type = object.type,
-             is_cs = is_cs
-           })
+             fill_todo_tables(object)
          end
          tables.polygon:add_row({
             tags = object.tags,
