@@ -11,7 +11,8 @@
 UPDATE
   osm_poi_campsites cs
 SET
-  tags = cs.tags || (sr.site_tags - 'type'::text - 'site'::text)
+  -- ignore addr:country from site relation
+  tags = cs.tags || (sr.site_tags - 'type'::text - 'site'::text - 'addr:country'::text)
 FROM (
   SELECT
     member_id,
