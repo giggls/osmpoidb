@@ -142,6 +142,14 @@ tables.todocs = osm2pgsql.define_table{
     columns = {{ column = 'is_cs', type = 'bool' }}
 }
 
+tables.todocsr = osm2pgsql.define_table{
+    name = 'osm_todo_camp_siterel',
+    ids = { type = 'relation', id_column = 'osm_id'},
+    columns = {
+        { column = 'id', sql_type = 'serial', create_only=true }
+    }
+}
+
 tables.todopg = osm2pgsql.define_table{
     name = 'osm_todo_playgrounds',
     ids = { type = 'any', id_column = 'osm_id', type_column = 'osm_type' },
@@ -260,10 +268,13 @@ function osm2pgsql.process_relation(object)
              site_tags = object.tags,
              timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp)
            })
+         if (osm2pgsql.mode == 'append') then
+           tables.todocsr:add_row({osm_id = object.id})
+         end
          end
       end
     end
-    
+
     -- Store multipolygons as polygons
     if object.tags.type == 'multipolygon' then
          if (osm2pgsql.mode == 'append') then
