@@ -33,12 +33,6 @@ adduser --system --group osm
   rtorrent https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent
   curl -s https://nominatim.org/data/country_grid.sql.gz |gzip -d >/opt/osm2pgsql/data/country_osm_grid.sql
   ```
-* Import country_osm_grid
-
-  ```
-  sudo -u osm psql -f /opt/osm2pgsql/data/country_osm_grid.sql poi
-
-  ```
 
 * Run initial database import
   ```
