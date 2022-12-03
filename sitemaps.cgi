@@ -9,7 +9,7 @@ import re
 import os
 
 dbconnstr="dbname=poi"
-sitemap_query = "SELECT osm_type,osm_id,timestamp FROM osm_poi_campsites WHERE tags->'addr:country' = '%s' and tags ? 'name';"
+sitemap_query = "SELECT osm_type,osm_id,timestamp FROM osm_poi_campsites WHERE tags->'addr:country' = '%s' AND tags ? 'name' AND visible = TRUE;"
 
 # If another language is added to OpenCampingMap this template needs to be modified
 # as wenn as the code where it gets filled

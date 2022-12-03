@@ -88,7 +88,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
 ) features;
 """
 
-sql_where_bbox="geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326)"
+sql_where_bbox="geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326) AND visible = TRUE"
 
 sql_where_id="osm_id = %s AND osm_type = '%s'"
 

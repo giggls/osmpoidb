@@ -135,7 +135,8 @@ SELECT
         AND (pt.tags ? 'sport')
         AND (pt.osm_id != poly.osm_id)) THEN
         pt.tags -> 'sport'
-      END), NULL) AS sport
+      END), NULL) AS sport,
+  TRUE as visible
 FROM
   osm_poi_poly AS poly
   LEFT JOIN osm_poi_ptpy AS pt ON poly.geom && pt.geom
@@ -194,7 +195,8 @@ SELECT
   FALSE,
   FALSE,
   FALSE,
-  '{}'
+  '{}',
+  TRUE
 FROM
   osm_poi_point
 WHERE (tags ? 'tourism')

@@ -9,7 +9,7 @@ import re
 import os
 
 dbconnstr="dbname=poi"
-index_query = "SELECT distinct tags->'addr:country' AS country,max(timestamp) as timestamp FROM osm_poi_campsites WHERE tags ? 'addr:country' GROUP BY country;"
+index_query = "SELECT distinct tags->'addr:country' AS country,max(timestamp) as timestamp FROM osm_poi_campsites WHERE tags ? 'addr:country' AND visible = TRUE GROUP BY country;"
 
 sitemap_path = b"/sitemaps"
 

@@ -127,7 +127,8 @@ SELECT
         AND (pt.tags ? 'sport')
         AND (pt.osm_id != poly.osm_id)) THEN
         pt.tags -> 'sport'
-      END), NULL) AS sport
+      END), NULL) AS sport,
+  TRUE as visible
 FROM
   osm_todo_campsites tc,
   osm_poi_poly AS poly
@@ -187,7 +188,8 @@ SELECT
   FALSE,
   FALSE,
   FALSE,
-  '{}'
+  '{}',
+  TRUE
 FROM
   osm_todo_campsites tc,
   osm_poi_point pp

@@ -30,28 +30,33 @@ WHERE
   si.id_outer = cs.osm_id
   AND si.type_outer = cs.osm_type;
 
+BEGIN;
+-- First mark all objects as visible
+UPDATE osm_poi_campsites SET visible = TRUE;
+
 --
--- Mark campsites that are inside others
+-- Now mark campsites and caravan sites that are inside others as invisible
+--
+--
 UPDATE
   osm_poi_campsites cs
 SET
-  tags = tags || hstore ('inside_sites', sc.urls_outer)
+  visible = FALSE
 FROM (
   SELECT
     i.osm_id AS id_inner,
-    i.osm_type AS type_inner,
-    string_agg('https://osm.org/' || CASE WHEN o.osm_type = 'W' THEN 'way/' WHEN o.osm_type = 'N' THEN 'node/' ELSE 'relation/' END || o.osm_id::text, ' ') AS urls_outer
+    i.osm_type AS type_inner
   FROM
     osm_poi_campsites o,
     osm_poi_campsites i
   WHERE
     st_contains (o.geom, i.geom)
     AND o.osm_id != i.osm_id
-    AND (i.tags -> 'tourism' != 'caravan_site')
   GROUP BY
     i.osm_id,
     i.osm_type) sc
 WHERE
   sc.id_inner = cs.osm_id
   AND sc.type_inner = cs.osm_type;
+COMMIT;
 
