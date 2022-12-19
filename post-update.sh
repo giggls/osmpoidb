@@ -1,11 +1,8 @@
 #!/bin/sh
 
-CODE_DIR=/opt/osm2pgsql/osmpoidb
 DBNAME='poi'
 
 set -e
-
-cd $CODE_DIR
 
 echo -n "$(date +'%Y-%m-%d %H:%M:%S')  calling post-update.sql..."
 t1=$(date +%s)

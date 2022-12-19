@@ -1,7 +1,12 @@
 #!/bin/sh
 
-DATA_DIR=/opt/osm2pgsql/data
-CODE_DIR=/opt/osm2pgsql/osmpoidb
+if [ $# -eq 0 ]; then
+  echo "usage: $(basename $0) basedir"
+  exit 1
+fi
+
+DATA_DIR=${1}/data
+CODE_DIR=${1}/osmpoidb
 DBNAME='poi'
 
 set -e

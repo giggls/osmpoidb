@@ -4,15 +4,24 @@
 #
 # (c) 2022 Sven Geggus <sven-osm@geggus-net>
 #
-if [ $# -ne 1 ]; then
-   echo "usage: $0 /path/to/planetfile" >&2
-   exit 1
-fi
 
 set -e
 
-DATA_DIR=/opt/osm2pgsql/data
-CODE_DIR=/opt/osm2pgsql/osmpoidb
+case $# in
+1)
+  basepath=/opt/osm2pgsql
+  ;;
+2)
+  basepath=$2
+  ;;
+*)
+  echo "usage: $0 /path/to/planetfile ?basepath?">&2
+  exit 1
+  ;;
+esac
+
+DATA_DIR=${basepath}/data
+CODE_DIR=${basepath}/osmpoidb
 DBNAME='poi'
 
 cd $DATA_DIR
