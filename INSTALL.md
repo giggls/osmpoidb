@@ -23,22 +23,23 @@ adduser --system --group osm
 
 * Prepare data directory
   ```
-  mkdir -p /opt/osm2pgsql/data
-  chown -r osm:osm /opt/osm2pgsql
+  export OSM2BASE=/opt/osm2pgsql
+  mkdir -p ${OSM2BASE}/data
+  chown -r osm:osm ${OSM2BASE}
   ``
 
 * Download Planetfile and countr_osm_grid.sql into data directory
   ```
-  cd /opt/osm2pgsql/data
+  cd ${OSM2BASE}/data
   rtorrent https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent
-  curl -s https://nominatim.org/data/country_grid.sql.gz |gzip -d >/opt/osm2pgsql/data/country_osm_grid.sql
+  curl -s https://nominatim.org/data/country_grid.sql.gz |gzip -d >${OSM2BASE}/data/country_osm_grid.sql
   ```
 
 * Run initial database import
   ```
-  cd /opt/osm2pgsql
-  git clone github.com/giggls/osmpoidb
-  sudo -u osm osmpoidb/doimport.sh /opt/osm2pgsql/data/planet*.pbf
+  cd ${OSM2BASE}
+  git clone https://github.com/giggls/osmpoidb
+  sudo -u osm osmpoidb/doimport.sh ${OSM2BASE}/data/planet*.pbf ${OSM2BASE}
   ```  
 
 * Init replication
@@ -48,9 +49,17 @@ adduser --system --group osm
   ```  
 
 * Enable update service
+  If you did not change OSM2BASE to something else than /opt/osm2pgsql just
+  do the following:
+
   ```
   cp poidb-update.* /etc/systemd/system
+  ```
+  Otherwise fix paths before copying.
+
+  Finaly enable update timer:
+
+  ```
   systemctl enable poidb-update.timer
   systemctl start poidb-update.timer
   ```
-
