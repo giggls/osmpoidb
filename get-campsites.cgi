@@ -10,6 +10,7 @@
 # test using the following commands:
 # REQUEST_METHOD=GET QUERY_STRING="bbox=-1.38,44.47,-0.95,44.81" ./get-campsites.cgi |tail +5 |jq .
 # REQUEST_METHOD=GET QUERY_STRING="osm_id=115074273&osm_type=way" ./get-campsites.cgi |tail +5 |jq .
+# REQUEST_METHOD=GET QUERY_STRING="country=li" ./get-campsites.cgi |tail +5 |jq .
 #
 import wsgiref.handlers
 import cgi
@@ -88,9 +89,11 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
 ) features;
 """
 
-sql_where_bbox="geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326) AND visible = TRUE"
+sql_where_bbox="geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326)"
 
 sql_where_id="osm_id = %s AND osm_type = '%s'"
+
+sql_where_country="tags->'addr:country'='%s'"
 
 empty_geojson = b'{"type": "FeatureCollection", "features": []}\n'
 
@@ -137,6 +140,7 @@ def application(environ, start_response):
     bbox = parms.get('bbox')
     osm_id = parms.get('osm_id')
     osm_type = parms.get('osm_type')
+    country = parms.get('country')
   else:
     environ['QUERY_STRING'] = ''
     post = cgi.FieldStorage(
@@ -147,6 +151,7 @@ def application(environ, start_response):
     bbox = post.getlist("bbox")
     osm_id = post.getlist("osm_id")
     osm_type = post.getlist("osm_type")
+    country = post.getlist("country")
     
   if ((bbox is not None) and (bbox != [])):
     # validate floating point values in bbox
@@ -157,29 +162,38 @@ def application(environ, start_response):
     if (validate_bbox(coords) == False):
       return([empty_geojson])
   else:
-    # add osm_id handling here
-    if ((osm_id is not None) and (osm_id != [])
-      and (osm_type is not None) and (osm_type != [])):
-      # validate osm_id must be numeric
-      if not osm_id[0].isdigit():
+    # country query
+    if ((country is not None) and (country != [])):
+      if (len(country[0]) > 3) or (len(country[0]) < 2) or (not country[0].isalpha()):
         return([empty_geojson])
-      if not osm_type[0] in ["node","way","relation"]:
-        return([empty_geojson])
+      country[0] = country[0].lower()
     else:
-      return([empty_geojson])
+      # osm_id query
+      if ((osm_id is not None) and (osm_id != [])
+        and (osm_type is not None) and (osm_type != [])):
+        # validate osm_id (must be numeric)
+        if not osm_id[0].isdigit():
+          return([empty_geojson])
+        if not osm_type[0] in ["node","way","relation"]:
+          return([empty_geojson])
+      else:
+        return([empty_geojson])
 
   try:
     conn = psycopg2.connect(dbconnstr)
   except:
     return([empty_geojson])
   
+  # if bbox is given country is ignored
   if ((bbox is not None) and (bbox != [])):
     q = sql_where_bbox % (coords[0],coords[1],coords[2],coords[3])
-    q = sql_query % q
   else:
-    q = sql_where_id % (osm_id[0],osm_type[0][0].upper())
-    q = sql_query % q
+    if ((country is not None) and (country != [])):
+      q = sql_where_country % country[0]
+    else:
+      q = sql_where_id % (osm_id[0],osm_type[0][0].upper())
   
+  q = sql_query % q
   cur = conn.cursor()
   cur.execute(q)
   res = cur.fetchall()
