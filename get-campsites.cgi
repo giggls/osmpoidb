@@ -29,7 +29,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               'bbox', array[round(ST_XMin(geom)::numeric,7),round(ST_YMin(geom)::numeric,7),
                                             round(ST_XMax(geom)::numeric,7),round(ST_YMax(geom)::numeric,7)],
                               'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
-                              tags ::jsonb
+                              CASE WHEN tags ? 'sport' THEN delete(tags, 'sport')::jsonb || Json_build_object('sport',array_to_json(string_to_array(tags->'sport',';')))::jsonb ELSE tags::jsonb END
                               || Json_build_object('category', category) ::jsonb
                               || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
                               || CASE when post_box = True THEN Json_build_object('post_box','yes') ELSE '{}' END ::jsonb
@@ -56,7 +56,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               ELSE Json_build_object('type', 'Feature',
                               'id', 'https://www.openstreetmap.org/node/' || osm_id,
                               'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
-                              tags ::jsonb
+                              CASE WHEN tags ? 'sport' THEN delete(tags, 'sport')::jsonb || Json_build_object('sport',array_to_json(string_to_array(tags->'sport',';')))::jsonb ELSE tags::jsonb END
                               || Json_build_object('category', category) ::jsonb
                               || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
                               || CASE when post_box = True THEN Json_build_object('post_box','yes') ELSE '{}' END ::jsonb
