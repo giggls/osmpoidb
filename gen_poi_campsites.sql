@@ -130,6 +130,20 @@ SELECT
       AND pt.tags -> 'building' = 'cabin', FALSE)) AS cabin,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'building' = 'static_caravan', FALSE)) AS static_caravan,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND pt.tags -> 'amenity' = 'kitchen', FALSE)) AS kitchen,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND ((pt.tags -> 'amenity' = 'sink')
+       OR ((pt.tags -> 'amenity' = 'kitchen')
+      AND (pt.tags ? 'sink')
+      AND (pt.tags -> 'sink' != 'no'))), FALSE)) AS sink,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND ((pt.tags -> 'amenity' = 'fridge')
+       OR ((pt.tags -> 'amenity' = 'kitchen')
+      AND (pt.tags ? 'fridge')
+      AND (pt.tags -> 'fridge' != 'no'))), FALSE)) AS fridge,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND pt.tags -> 'leisure' = 'picnic_table', FALSE)) AS picnic_table,
   -- This will produce a list of available sport facilities on the premises
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'sport')
@@ -173,6 +187,10 @@ SELECT
   ELSE
     'standard'
   END AS category,
+  FALSE,
+  FALSE,
+  FALSE,
+  FALSE,
   FALSE,
   FALSE,
   FALSE,

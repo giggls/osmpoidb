@@ -373,6 +373,84 @@ WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
 
+-- kitchen in site relations
+UPDATE
+  osm_poi_campsites cs
+SET
+  bar = TRUE
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags -> 'tourism' = 'camp_site'
+      AND r.member_tags -> 'amenity' = 'kitchen') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- sinks or kitchen with sink != 'no' in site relations
+UPDATE
+  osm_poi_campsites cs
+SET
+  shower = TRUE
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags -> 'tourism' = 'camp_site'
+      AND ((r.member_tags -> 'amenity' = 'sink')
+        OR ((r.member_tags -> 'amenity' = 'kitchen')
+          AND (r.member_tags ? 'sink')
+          AND (r.member_tags -> 'sink' != 'no')))) sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- fridges or kitchen with fridge != 'no' in site relations
+UPDATE
+  osm_poi_campsites cs
+SET
+  shower = TRUE
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags -> 'tourism' = 'camp_site'
+      AND ((r.member_tags -> 'amenity' = 'fridge')
+        OR ((r.member_tags -> 'amenity' = 'kitchen')
+          AND (r.member_tags ? 'fridge')
+          AND (r.member_tags -> 'fridge' != 'no')))) sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- picnic_table in site relations
+UPDATE
+  osm_poi_campsites cs
+SET
+  bar = TRUE
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags -> 'tourism' = 'camp_site'
+      AND r.member_tags -> 'amenity' = 'picnic_table') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
 -- sports facilities in site relations
 UPDATE
   osm_poi_campsites cs
