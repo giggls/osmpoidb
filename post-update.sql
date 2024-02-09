@@ -61,7 +61,8 @@ SELECT
   WHEN poly.tags -> 'backcountry' = 'yes' THEN
     'backcountry'
   WHEN ((poly.tags -> 'tents' = 'yes')
-    AND (poly.tags -> 'caravans' = 'no') AND (poly.tags -> 'motorhome' != 'yes')) THEN
+    AND (poly.tags -> 'caravans' = 'no')
+    AND (NOT (poly.tags ? 'motorhome') OR (poly.tags -> 'motorhome' != 'yes'))) THEN
     'camping'
   WHEN ((poly.tags -> 'tents' = 'no')
     OR ((poly.tags -> 'tourism' = 'caravan_site')
@@ -171,7 +172,8 @@ SELECT
   WHEN pp.tags -> 'backcountry' = 'yes' THEN
     'backcountry'
   WHEN ((pp.tags -> 'tents' = 'yes')
-    AND (pp.tags -> 'caravans' = 'no')) THEN
+    AND (pp.tags -> 'caravans' = 'no')
+    AND (NOT (pp.tags ? 'motorhome') OR (pp.tags -> 'motorhome' != 'yes'))) THEN
     'camping'
   WHEN ((pp.tags -> 'tents' = 'no')
     OR ((pp.tags -> 'tourism' = 'caravan_site')
