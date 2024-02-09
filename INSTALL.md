@@ -1,5 +1,5 @@
 # How to setup POI database
-## (development Platform is Debian 11, PostgreSQL 13, PostGIS 3.1)
+## (development Platform is Debian 12, PostgreSQL 15, PostGIS 3.3)
 
 * Install requiered Software Packages
 ```
