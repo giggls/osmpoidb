@@ -6,7 +6,13 @@
 -- are obviously bugs, so both types need to be marked.
 --
 --
--- Mark campsites that contain others
+
+BEGIN;
+
+-- First remove old markers
+UPDATE osm_poi_campsites SET tags = delete(tags, 'contains_sites') WHERE tags ? 'contains_sites';
+
+-- Now mark campsites that contain others
 UPDATE
   osm_poi_campsites cs
 SET
@@ -30,7 +36,6 @@ WHERE
   si.id_outer = cs.osm_id
   AND si.type_outer = cs.osm_type;
 
-BEGIN;
 -- First mark all objects as visible
 UPDATE osm_poi_campsites SET visible = TRUE;
 
@@ -58,5 +63,5 @@ FROM (
 WHERE
   sc.id_inner = cs.osm_id
   AND sc.type_inner = cs.osm_type;
-COMMIT;
 
+COMMIT;
