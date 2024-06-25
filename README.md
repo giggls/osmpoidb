@@ -6,5 +6,9 @@ The database is updated in a 10 minute interval.
 Special tables or views based on spatial operations can be created by sql scripts which are
 executed right after the hourly updates.
 
-Currently a derived table containing campsites and a table containing
-playgrounds is updated at this place.
+Currently a derived table containing campsites for
+https://opencampingmap.org and a table containing
+playgrounds for https://babykarte.openstreetmap.de/
+is updated at this place.
+https://brewmap.openstreetmap.de is also using this database.
+
