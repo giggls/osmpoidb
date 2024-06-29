@@ -54,7 +54,7 @@ SELECT * FROM osm_poi_point
 UNION ALL
 SELECT * FROM osm_poi_line;
 
-CREATE TABLE osm_poi_campsites AS
+CREATE TABLE osm_poi_campsites_new AS
 SELECT
   poly.osm_id AS osm_id,
   poly.geom AS geom,
@@ -226,15 +226,20 @@ WHERE (tags ? 'tourism')
 AND (tags -> 'tourism' IN ('camp_site', 'caravan_site'));
 
 -- geometry index
-CREATE INDEX osm_poi_campsites_geom ON osm_poi_campsites USING GIST (geom);
+CREATE INDEX osm_poi_campsites_geom_new ON osm_poi_campsites_new USING GIST (geom);
 
 -- index on osm_id (UNIQUE) maybe not needed
 --CREATE UNIQUE INDEX osm_poi_campsites_osm_id ON osm_poi_campsites (id);
 
 -- index on osm_type
-CREATE INDEX osm_poi_campsites_osm_type ON osm_poi_campsites (osm_type);
+CREATE INDEX osm_poi_campsites_osm_type_new ON osm_poi_campsites_new (osm_type);
 
-GRANT SELECT ON osm_poi_campsites TO public;
+GRANT SELECT ON osm_poi_campsites_new TO public;
+
+DROP TABLE IF EXISTS osm_poi_campsites;
+ALTER TABLE osm_poi_campsites_new RENAME TO osm_poi_campsites;
+ALTER INDEX osm_poi_campsites_geom_new RENAME TO osm_poi_campsites_geom;
+ALTER INDEX osm_poi_campsites_osm_type_new RENAME TO osm_poi_campsites_osm_type;
 
 -- extend osm_poi_camp_siterel with geometry and member tags
 CREATE OR REPLACE VIEW osm_poi_camp_siterel_extended AS
