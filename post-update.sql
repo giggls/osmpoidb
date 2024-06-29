@@ -93,7 +93,10 @@ SELECT
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'leisure' = 'firepit', FALSE)) AS firepit,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'bbq', FALSE)) AS bbq,
+      AND ((pt.tags -> 'amenity' = 'bbq')
+       OR ((pt.tags -> 'leisure' = 'firepit')
+      AND (pt.tags ? 'grate')
+      AND (pt.tags -> 'grate' = 'yes'))), FALSE)) AS bbq,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags -> 'amenity' = 'toilets', FALSE)) AS toilets,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
