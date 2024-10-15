@@ -9,6 +9,7 @@ local unified_keys = {
     ["contact:fax"] = "fax",
     ["contact:website"] = "website",
     ["contact:email"] = "email",
+    ["contact:mobile"] = "mobile",
     url = "website"
 };
 
