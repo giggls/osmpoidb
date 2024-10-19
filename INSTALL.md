@@ -12,12 +12,11 @@ apt install -t bullseye-backports osm2pgsql
 adduser --system --group osm
 ```
 
-* Create database with postgis and hstore enabled
+* Create database with postgis enabled
   ```
   sudo -u postgres createuser osm
   sudo -u postgres createdb -O osm poi
   sudo -u postgres psql -c 'CREATE EXTENSION postgis;' poi
-  sudo -u osm psql -c 'CREATE EXTENSION hstore;' poi
 
   ```
 
@@ -32,7 +31,7 @@ adduser --system --group osm
   ```
   cd ${OSM2BASE}/data
   rtorrent https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent
-  curl -s https://nominatim.org/data/country_grid.sql.gz |gzip -d >${OSM2BASE}/data/country_osm_grid.sql
+  curl -s https://nominatim.org/data/country_grid.sql.gz -A OpenCampingMap |gzip -d >${OSM2BASE}/data/country_osm_grid.sql
   ```
 
 * Run initial database import

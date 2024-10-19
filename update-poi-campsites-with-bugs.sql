@@ -1,6 +1,6 @@
 -- update osm_poi_campsites with obvious bugs to display them on Open Camping Map
 --
--- (c) 2022 Sven Geggus <sven-osm@geggus-net>
+-- (c) 2022-2024 Sven Geggus <sven-osm@geggus-net>
 --
 -- tourism=camp_site objects inside tourism=camp_site objects
 -- are obviously bugs, so both types need to be marked.
@@ -10,13 +10,13 @@
 BEGIN;
 
 -- First remove old markers
-UPDATE osm_poi_campsites SET tags = delete(tags, 'contains_sites') WHERE tags ? 'contains_sites';
+UPDATE osm_poi_campsites SET tags = tags - 'contains_sites' WHERE tags ? 'contains_sites';
 
 -- Now mark campsites that contain others
 UPDATE
   osm_poi_campsites cs
 SET
-  tags = tags || hstore ('contains_sites', si.urls_inner)
+  tags = tags || jsonb_build_object('contains_sites', si.urls_inner)
 FROM (
   SELECT
     o.osm_id AS id_outer,
@@ -28,7 +28,7 @@ FROM (
   WHERE
     st_contains (o.geom, i.geom)
     AND o.osm_id != i.osm_id
-    AND (i.tags -> 'tourism' != 'caravan_site')
+    AND (i.tags ->> 'tourism' != 'caravan_site')
   GROUP BY
     o.osm_id,
     o.osm_type) si

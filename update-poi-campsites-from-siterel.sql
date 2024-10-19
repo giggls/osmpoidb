@@ -21,7 +21,7 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended
   WHERE
-    member_tags -> 'tourism' = 'camp_site') sr
+    member_tags ->> 'tourism' = 'camp_site') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -38,8 +38,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'telephone') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'telephone') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -56,8 +56,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'post_box') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'post_box') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -74,8 +74,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'drinking_water') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'drinking_water') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -92,9 +92,9 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
+      AND s.member_tags ->> 'tourism' = 'camp_site'
       AND (r.member_tags ? 'shop'
-        AND r.member_tags -> 'shop' != 'laundry')) sr
+        AND r.member_tags ->> 'shop' != 'laundry')) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -111,9 +111,9 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'amenity' = 'washing_machine')
-        OR (r.member_tags -> 'shop' = 'laundry'))) sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'washing_machine')
+        OR (r.member_tags ->> 'shop' = 'laundry'))) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -130,8 +130,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'sanitary_dump_station') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'sanitary_dump_station') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -148,8 +148,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'firepit') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'firepit') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -166,11 +166,11 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'amenity' = 'bbq')
-        OR ((r.member_tags -> 'leisure' = 'firepit')
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'bbq')
+        OR ((r.member_tags ->> 'leisure' = 'firepit')
           AND (r.member_tags ? 'grate')
-          AND (r.member_tags -> 'grate' = 'yes')))) sr
+          AND (r.member_tags ->> 'grate' = 'yes')))) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -187,8 +187,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'toilets') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'toilets') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -205,11 +205,11 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'amenity' = 'shower')
-        OR ((r.member_tags -> 'amenity' = 'toilets')
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'shower')
+        OR ((r.member_tags ->> 'amenity' = 'toilets')
           AND (r.member_tags ? 'shower')
-          AND (r.member_tags -> 'shower' != 'no')))) sr
+          AND (r.member_tags ->> 'shower' != 'no')))) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -226,8 +226,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'playground') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'playground') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -244,8 +244,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'swimming_pool') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'swimming_pool') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -262,8 +262,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'golf_course') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'golf_course') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -280,8 +280,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'miniature_golf') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'miniature_golf') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -298,8 +298,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'sauna') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'sauna') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -316,8 +316,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'fast_food') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'fast_food') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -334,8 +334,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'restaurant') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'restaurant') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -352,8 +352,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'pub') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'pub') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -370,8 +370,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'bar') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'bar') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -388,8 +388,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'kitchen') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'kitchen') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -406,11 +406,11 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'amenity' = 'sink')
-        OR ((r.member_tags -> 'amenity' = 'kitchen')
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'sink')
+        OR ((r.member_tags ->> 'amenity' = 'kitchen')
           AND (r.member_tags ? 'sink')
-          AND (r.member_tags -> 'sink' != 'no')))) sr
+          AND (r.member_tags ->> 'sink' != 'no')))) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -427,11 +427,11 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'amenity' = 'fridge')
-        OR ((r.member_tags -> 'amenity' = 'kitchen')
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'fridge')
+        OR ((r.member_tags ->> 'amenity' = 'kitchen')
           AND (r.member_tags ? 'fridge')
-          AND (r.member_tags -> 'fridge' != 'no')))) sr
+          AND (r.member_tags ->> 'fridge' != 'no')))) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -448,8 +448,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'picnic_table') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'picnic_table') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -464,11 +464,11 @@ FROM (
   SELECT
     s.member_id,
     s.member_type,
-    array_agg(r.member_tags -> 'sport') AS sport
+    array_agg(r.member_tags ->> 'sport') AS sport
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
+      AND s.member_tags ->> 'tourism' = 'camp_site'
       AND r.member_tags ? 'sport'
   GROUP BY
     s.member_id,
@@ -483,7 +483,7 @@ UPDATE
 SET
   -- This will overwrite the site_relation value with the latter one,
   -- if the site is a member of more than one site relation
-  tags = tags || hstore ('site_relation', sr.site_id::text)
+  tags = tags || jsonb_build_object('site_relation', sr.site_id::text)
 FROM (
   SELECT
     member_id,
@@ -492,7 +492,7 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended
   WHERE
-    member_tags -> 'tourism' = 'camp_site') sr
+    member_tags ->> 'tourism' = 'camp_site') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -502,7 +502,7 @@ WHERE
 UPDATE
   osm_poi_campsites cs
 SET
-  tags = tags || hstore ('site_relation_state', 'invalid')
+  tags = tags || jsonb_build_object('site_relation_state', 'invalid')
 FROM (
   SELECT
     member_id,
@@ -520,12 +520,12 @@ FROM (
         FROM
           osm_poi_camp_siterel_extended
         WHERE
-          member_tags -> 'tourism' = 'camp_site'
+          member_tags ->> 'tourism' = 'camp_site'
         GROUP BY
           site_id) AS c
       WHERE
         COUNT != 1)
-      AND member_tags -> 'tourism' = 'camp_site') sr
+      AND member_tags ->> 'tourism' = 'camp_site') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -535,7 +535,7 @@ WHERE
 UPDATE
   osm_poi_campsites cs
 SET
-  tags = tags || hstore ('site_relation_state', 'useless')
+  tags = tags || jsonb_build_object('site_relation_state', 'useless')
 FROM (
   SELECT
     s.member_id,
@@ -543,8 +543,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'tourism' != 'camp_site')
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'tourism' != 'camp_site')
         OR NOT (r.member_tags ? 'tourism'))
       GROUP BY
         s.member_id) sr

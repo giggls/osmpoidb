@@ -12,7 +12,7 @@ JOIN osm_todo_campsites tc
 ON tc.osm_id=pa.osm_id AND tc.osm_type=pa.osm_type
 WHERE tc.is_cs=false
 ) as tc
-WHERE (pa.tags -> 'tourism' IN ('camp_site', 'caravan_site'))
+WHERE (pa.tags ->> 'tourism' IN ('camp_site', 'caravan_site'))
 AND ST_Intersects(tc.geom,pa.geom)
 ON CONFLICT (osm_id,osm_type) DO NOTHING;
 
@@ -34,7 +34,7 @@ INSERT INTO osm_todo_campsites(osm_id,osm_type,is_cs)
 SELECT DISTINCT csre.member_id,csre.member_type,true
 FROM osm_poi_camp_siterel_extended csre,osm_todo_camp_siterel tcsr
 WHERE csre.site_id=tcsr.osm_id
-AND csre.member_tags->'tourism' IN ('camp_site', 'caravan_site')
+AND csre.member_tags ->> 'tourism' IN ('camp_site', 'caravan_site')
 ON CONFLICT (osm_id,osm_type) DO NOTHING;
 
 -- Make osm_id in table osm_todo_camp_siterel UNIQUE
@@ -53,98 +53,98 @@ SELECT
   unify_tags (poly.tags, poly.geom) AS tags,
   greatest(max(CASE WHEN _st_intersects(poly.geom, pt.geom) THEN pt.timestamp END),poly.timestamp) as timestamp,
   poly.osm_type AS osm_type,
-  CASE WHEN poly.tags -> 'nudism' IN ('yes', 'obligatory', 'customary', 'designated') THEN
+  CASE WHEN poly.tags ->> 'nudism' IN ('yes', 'obligatory', 'customary', 'designated') THEN
     'nudist'
-  WHEN ((poly.tags -> 'group_only' = 'yes')
-    OR (poly.tags -> 'scout' = 'yes')) THEN
+  WHEN ((poly.tags ->> 'group_only' = 'yes')
+    OR (poly.tags ->> 'scout' = 'yes')) THEN
     'group_only'
-  WHEN poly.tags -> 'backcountry' = 'yes' THEN
+  WHEN poly.tags ->> 'backcountry' = 'yes' THEN
     'backcountry'
-  WHEN ((poly.tags -> 'tents' = 'yes')
-    AND (poly.tags -> 'caravans' = 'no')
-    AND (NOT (poly.tags ? 'motorhome') OR (poly.tags -> 'motorhome' != 'yes'))) THEN
+  WHEN ((poly.tags ->> 'tents' = 'yes')
+    AND (poly.tags ->> 'caravans' = 'no')
+    AND (NOT (poly.tags ? 'motorhome') OR (poly.tags ->> 'motorhome' != 'yes'))) THEN
     'camping'
-  WHEN ((poly.tags -> 'tents' = 'no')
-    OR ((poly.tags -> 'tourism' = 'caravan_site')
+  WHEN ((poly.tags ->> 'tents' = 'no')
+    OR ((poly.tags ->> 'tourism' = 'caravan_site')
       AND NOT (poly.tags ? 'tents'))) THEN
     'caravan'
   ELSE
     'standard'
   END AS category,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'telephone', FALSE)) AS telephone,
+      AND pt.tags ->> 'amenity' = 'telephone', FALSE)) AS telephone,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'post_box', FALSE)) AS post_box,
+      AND pt.tags ->> 'amenity' = 'post_box', FALSE)) AS post_box,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND ((pt.tags -> 'amenity' = 'drinking_water')
-       OR ((pt.tags -> 'man_made' = 'water_tap') AND (pt.tags -> 'drinking_water' = 'yes'))
-       OR (pt.tags -> 'amenity' = 'water_point')), FALSE)) AS drinking_water,
+      AND ((pt.tags ->> 'amenity' = 'drinking_water')
+       OR ((pt.tags ->> 'man_made' = 'water_tap') AND (pt.tags ->> 'drinking_water' = 'yes'))
+       OR (pt.tags ->> 'amenity' = 'water_point')), FALSE)) AS drinking_water,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'power_supply', FALSE)) AS power_supply,
+      AND pt.tags ->> 'amenity' = 'power_supply', FALSE)) AS power_supply,
   -- any shop likely convenience
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND ((pt.tags ? 'shop')
-      AND pt.tags -> 'shop' != 'laundry'), FALSE)) AS shop,
+      AND pt.tags ->> 'shop' != 'laundry'), FALSE)) AS shop,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND ((pt.tags -> 'amenity' = 'washing_machine')
-       OR (pt.tags -> 'shop' = 'laundry')), FALSE)) AS laundry,
+      AND ((pt.tags ->> 'amenity' = 'washing_machine')
+       OR (pt.tags ->> 'shop' = 'laundry')), FALSE)) AS laundry,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'sanitary_dump_station', FALSE)) AS sanitary_dump_station,
+      AND pt.tags ->> 'amenity' = 'sanitary_dump_station', FALSE)) AS sanitary_dump_station,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'leisure' = 'firepit', FALSE)) AS firepit,
+      AND pt.tags ->> 'leisure' = 'firepit', FALSE)) AS firepit,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND ((pt.tags -> 'amenity' = 'bbq')
-       OR ((pt.tags -> 'leisure' = 'firepit')
+      AND ((pt.tags ->> 'amenity' = 'bbq')
+       OR ((pt.tags ->> 'leisure' = 'firepit')
       AND (pt.tags ? 'grate')
-      AND (pt.tags -> 'grate' = 'yes'))), FALSE)) AS bbq,
+      AND (pt.tags ->> 'grate' = 'yes'))), FALSE)) AS bbq,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'toilets', FALSE)) AS toilets,
+      AND pt.tags ->> 'amenity' = 'toilets', FALSE)) AS toilets,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND ((pt.tags -> 'amenity' = 'shower')
-       OR ((pt.tags -> 'amenity' = 'toilets')
+      AND ((pt.tags ->> 'amenity' = 'shower')
+       OR ((pt.tags ->> 'amenity' = 'toilets')
       AND (pt.tags ? 'shower')
-      AND (pt.tags -> 'shower' != 'no'))), FALSE)) AS shower,
+      AND (pt.tags ->> 'shower' != 'no'))), FALSE)) AS shower,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'leisure' = 'playground', FALSE)) AS playground,
+      AND pt.tags ->> 'leisure' = 'playground', FALSE)) AS playground,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'leisure' = 'swimming_pool', FALSE)) AS swimming_pool,
+      AND pt.tags ->> 'leisure' = 'swimming_pool', FALSE)) AS swimming_pool,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'leisure' = 'golf_course', FALSE)) AS golf_course,
+      AND pt.tags ->> 'leisure' = 'golf_course', FALSE)) AS golf_course,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'leisure' = 'miniature_golf', FALSE)) AS miniature_golf,
+      AND pt.tags ->> 'leisure' = 'miniature_golf', FALSE)) AS miniature_golf,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'leisure' = 'sauna', FALSE)) AS sauna,
+      AND pt.tags ->> 'leisure' = 'sauna', FALSE)) AS sauna,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'fast_food', FALSE)) AS fast_food,
+      AND pt.tags ->> 'amenity' = 'fast_food', FALSE)) AS fast_food,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'restaurant', FALSE)) AS restaurant,
+      AND pt.tags ->> 'amenity' = 'restaurant', FALSE)) AS restaurant,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'pub', FALSE)) AS pub,
+      AND pt.tags ->> 'amenity' = 'pub', FALSE)) AS pub,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'bar', FALSE)) AS bar,
+      AND pt.tags ->> 'amenity' = 'bar', FALSE)) AS bar,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'building' = 'cabin', FALSE)) AS cabin,
+      AND pt.tags ->> 'building' = 'cabin', FALSE)) AS cabin,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'building' = 'static_caravan', FALSE)) AS static_caravan,
+      AND pt.tags ->> 'building' = 'static_caravan', FALSE)) AS static_caravan,
     Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'amenity' = 'kitchen', FALSE)) AS kitchen,
+      AND pt.tags ->> 'amenity' = 'kitchen', FALSE)) AS kitchen,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND ((pt.tags -> 'amenity' = 'sink')
-       OR ((pt.tags -> 'amenity' = 'kitchen')
+      AND ((pt.tags ->> 'amenity' = 'sink')
+       OR ((pt.tags ->> 'amenity' = 'kitchen')
       AND (pt.tags ? 'sink')
-      AND (pt.tags -> 'sink' != 'no'))), FALSE)) AS sink,
+      AND (pt.tags ->> 'sink' != 'no'))), FALSE)) AS sink,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND ((pt.tags -> 'amenity' = 'fridge')
-       OR ((pt.tags -> 'amenity' = 'kitchen')
+      AND ((pt.tags ->> 'amenity' = 'fridge')
+       OR ((pt.tags ->> 'amenity' = 'kitchen')
       AND (pt.tags ? 'fridge')
-      AND (pt.tags -> 'fridge' != 'no'))), FALSE)) AS fridge,
+      AND (pt.tags ->> 'fridge' != 'no'))), FALSE)) AS fridge,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags -> 'leisure' = 'picnic_table', FALSE)) AS picnic_table,
+      AND pt.tags ->> 'leisure' = 'picnic_table', FALSE)) AS picnic_table,
   -- This will produce a list of available sport facilities on the premises
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'sport')
         AND (pt.osm_id != poly.osm_id)) THEN
-        pt.tags -> 'sport'
+        pt.tags ->> 'sport'
       END), NULL) AS sport,
   TRUE as visible
 FROM
@@ -163,23 +163,22 @@ UNION ALL
 SELECT
   pp.osm_id,
   pp.geom,
-  -- this will remove the redundant key 'tourism' = 'camp_site' from hstore
   unify_tags (pp.tags, pp.geom) AS tags,
   pp.timestamp,
   pp.osm_type,
-  CASE WHEN pp.tags -> 'nudism' IN ('yes', 'obligatory', 'customary', 'designated') THEN
+  CASE WHEN pp.tags ->> 'nudism' IN ('yes', 'obligatory', 'customary', 'designated') THEN
     'nudist'
-  WHEN ((pp.tags -> 'group_only' = 'yes')
-    OR (pp.tags -> 'scout' = 'yes')) THEN
+  WHEN ((pp.tags ->> 'group_only' = 'yes')
+    OR (pp.tags ->> 'scout' = 'yes')) THEN
     'group_only'
-  WHEN pp.tags -> 'backcountry' = 'yes' THEN
+  WHEN pp.tags ->> 'backcountry' = 'yes' THEN
     'backcountry'
-  WHEN ((pp.tags -> 'tents' = 'yes')
-    AND (pp.tags -> 'caravans' = 'no')
-    AND (NOT (pp.tags ? 'motorhome') OR (pp.tags -> 'motorhome' != 'yes'))) THEN
+  WHEN ((pp.tags ->> 'tents' = 'yes')
+    AND (pp.tags ->> 'caravans' = 'no')
+    AND (NOT (pp.tags ? 'motorhome') OR (pp.tags ->> 'motorhome' != 'yes'))) THEN
     'camping'
-  WHEN ((pp.tags -> 'tents' = 'no')
-    OR ((pp.tags -> 'tourism' = 'caravan_site')
+  WHEN ((pp.tags ->> 'tents' = 'no')
+    OR ((pp.tags ->> 'tourism' = 'caravan_site')
       AND NOT (pp.tags ? 'tents'))) THEN
     'caravan'
   ELSE
@@ -232,7 +231,7 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended csre, osm_todo_camp_siterel tdsr
   WHERE
-    member_tags -> 'tourism' = 'camp_site' AND csre.site_id=tdsr.osm_id
+    member_tags ->> 'tourism' = 'camp_site' AND csre.site_id=tdsr.osm_id
      ) sr
 WHERE
   cs.osm_id = sr.member_id
@@ -250,8 +249,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'telephone') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'telephone') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -268,8 +267,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'post_box') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'post_box') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -286,8 +285,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'drinking_water') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'drinking_water') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -304,9 +303,9 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
+      AND s.member_tags ->> 'tourism' = 'camp_site'
       AND (r.member_tags ? 'shop'
-        AND r.member_tags -> 'shop' != 'laundry')) sr
+        AND r.member_tags ->> 'shop' != 'laundry')) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -323,9 +322,9 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'amenity' = 'washing_machine')
-        OR (r.member_tags -> 'shop' = 'laundry'))) sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'washing_machine')
+        OR (r.member_tags ->> 'shop' = 'laundry'))) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -342,8 +341,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'sanitary_dump_station') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'sanitary_dump_station') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -360,8 +359,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'firepit') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'firepit') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -378,8 +377,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'bbq') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'bbq') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -396,8 +395,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'toilets') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'toilets') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -414,11 +413,11 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'amenity' = 'shower')
-        OR ((r.member_tags -> 'amenity' = 'toilets')
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'shower')
+        OR ((r.member_tags ->> 'amenity' = 'toilets')
           AND (r.member_tags ? 'shower')
-          AND (r.member_tags -> 'shower' != 'no')))) sr
+          AND (r.member_tags ->> 'shower' != 'no')))) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -435,8 +434,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'playground') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'playground') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -453,8 +452,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'swimming_pool') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'swimming_pool') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -471,8 +470,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'golf_course') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'golf_course') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -489,8 +488,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'miniature_golf') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'miniature_golf') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -507,8 +506,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'leisure' = 'sauna') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'sauna') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -525,8 +524,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'fast_food') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'fast_food') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -543,8 +542,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'restaurant') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'restaurant') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -561,8 +560,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'pub') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'pub') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -579,8 +578,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND r.member_tags -> 'amenity' = 'bar') sr
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'bar') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -595,11 +594,11 @@ FROM (
   SELECT
     s.member_id,
     s.member_type,
-    array_agg(r.member_tags -> 'sport') AS sport
+    array_agg(r.member_tags ->> 'sport') AS sport
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
+      AND s.member_tags ->> 'tourism' = 'camp_site'
       AND r.member_tags ? 'sport'
   GROUP BY
     s.member_id,
@@ -614,7 +613,7 @@ UPDATE
 SET
   -- This will overwrite the site_relation value with the latter one,
   -- if the site is a member of more than one site relation
-  tags = tags || hstore ('site_relation', sr.site_id::text)
+  tags = tags || jsonb_build_object('site_relation', sr.site_id::text)
 FROM (
   SELECT
     member_id,
@@ -623,7 +622,7 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended
   WHERE
-    member_tags -> 'tourism' = 'camp_site') sr
+    member_tags ->> 'tourism' = 'camp_site') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -633,7 +632,7 @@ WHERE
 UPDATE
   osm_poi_campsites cs
 SET
-  tags = tags || hstore ('site_relation_state', 'invalid')
+  tags = tags || jsonb_build_object('site_relation_state', 'invalid')
 FROM (
   SELECT
     member_id,
@@ -651,12 +650,12 @@ FROM (
         FROM
           osm_poi_camp_siterel_extended
         WHERE
-          member_tags -> 'tourism' = 'camp_site'
+          member_tags ->> 'tourism' = 'camp_site'
         GROUP BY
           site_id) AS c
       WHERE
         COUNT != 1)
-      AND member_tags -> 'tourism' = 'camp_site') sr
+      AND member_tags ->> 'tourism' = 'camp_site') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
@@ -666,7 +665,7 @@ WHERE
 UPDATE
   osm_poi_campsites cs
 SET
-  tags = tags || hstore ('site_relation_state', 'useless')
+  tags = tags || jsonb_build_object('site_relation_state', 'useless')
 FROM (
   SELECT
     s.member_id,
@@ -674,8 +673,8 @@ FROM (
   FROM
     osm_poi_camp_siterel_extended s
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags -> 'tourism' = 'camp_site'
-      AND ((r.member_tags -> 'tourism' != 'camp_site')
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'tourism' != 'camp_site')
         OR NOT (r.member_tags ? 'tourism'))
       GROUP BY
         s.member_id) sr
@@ -707,7 +706,7 @@ JOIN osm_todo_playgrounds tp
 ON tp.osm_id=pa.osm_id AND tp.osm_type=pa.osm_type
 WHERE tp.is_pg=false
 ) as tp
-WHERE (pa.tags -> 'leisure' = 'playground')
+WHERE (pa.tags ->> 'leisure' = 'playground')
 AND ST_Intersects(tp.geom,pa.geom)
 ON CONFLICT (osm_id,osm_type) DO NOTHING;
 
@@ -735,13 +734,13 @@ SELECT
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'playground')
         AND (pt.osm_id != poly.osm_id)) THEN
-        pt.tags -> 'playground'
+        pt.tags ->> 'playground'
       END), NULL) AS equipment,
   -- This will produce a list of available sport facilities on the premises
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'sport')
         AND (pt.osm_id != poly.osm_id)) THEN
-        pt.tags -> 'sport'
+        pt.tags ->> 'sport'
       END), NULL) AS sport
 FROM
   osm_todo_playgrounds tp,

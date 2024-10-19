@@ -12,18 +12,18 @@ SELECT
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'playground')
         AND (pt.osm_id != poly.osm_id)) THEN
-        pt.tags -> 'playground'
+        pt.tags ->> 'playground'
       END), NULL) AS equipment,
   -- This will produce a list of available sport facilities on the premises
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'sport')
         AND (pt.osm_id != poly.osm_id)) THEN
-        pt.tags -> 'sport'
+        pt.tags ->> 'sport'
       END), NULL) AS sport
 FROM
   osm_poi_poly AS poly
   LEFT JOIN osm_poi_all AS pt ON poly.geom && pt.geom
-WHERE (poly.tags -> 'leisure' = 'playground')
+WHERE (poly.tags ->> 'leisure' = 'playground')
 GROUP BY
   poly.osm_id,
   poly.osm_type,
@@ -41,7 +41,7 @@ SELECT
   '{}'
 FROM
   osm_poi_point
-WHERE (tags -> 'leisure' = 'playground');
+WHERE (tags ->> 'leisure' = 'playground');
 
 -- geometry index
 CREATE INDEX osm_poi_playgrounds_geom ON osm_poi_playgrounds USING GIST (geom);

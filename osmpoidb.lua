@@ -1,16 +1,16 @@
 -- lua script for osm2pgsql to import and update osmpoidb
 --
--- (c) 2022 Sven Geggus <sven-osm@geggus-net>
+-- (c) 2022-2024 Sven Geggus <sven-osm@geggus-net>
 
 -- Unify the following keys in the database
 local unified_keys = {
     booking = "reservation",
-    ["contact:phone"] = "phone",
-    ["contact:fax"] = "fax",
-    ["contact:website"] = "website",
-    ["contact:email"] = "email",
-    ["contact:mobile"] = "mobile",
-    url = "website"
+    phone = "contact:phone",
+    fax = "contact:fax",
+    website = "contact:website",
+    email = "contact:email",
+    mobile = "contact:mobile",
+    url = "contact:website"
 };
 
 
@@ -98,8 +98,8 @@ tables.point = osm2pgsql.define_table{
     columns = {
         { column = 'id', sql_type = 'serial', create_only=true },
         { column = 'timestamp', sql_type = 'timestamp' },
-        { column = 'tags',  type = 'hstore' },
-        { column = 'geom',  type = 'geometry', projection = 'latlong'  },
+        { column = 'tags',  type = 'jsonb' },
+        { column = 'geom',  type = 'point', projection = 'latlong'  },
     }
 }
 
@@ -109,8 +109,8 @@ tables.line = osm2pgsql.define_table{
     columns = {
         { column = 'id', sql_type = 'serial', create_only=true },
         { column = 'timestamp', sql_type = 'timestamp' },
-        { column = 'tags',  type = 'hstore' },
-        { column = 'geom',  type = 'geometry', projection = 'latlong'  },
+        { column = 'tags',  type = 'jsonb' },
+        { column = 'geom',  type = 'linestring', projection = 'latlong'  },
     }
 }
 
@@ -120,8 +120,8 @@ tables.polygon = osm2pgsql.define_table{
     columns = {
         { column = 'id', sql_type = 'serial', create_only=true },
         { column = 'timestamp', sql_type = 'timestamp' },
-        { column = 'tags',  type = 'hstore' },
-        { column = 'geom',  type = 'geometry', projection = 'latlong'  },
+        { column = 'tags',  type = 'jsonb' },
+        { column = 'geom',  type = 'multipolygon', projection = 'latlong'  },
     }
 }
 
@@ -133,7 +133,7 @@ tables.siterel = osm2pgsql.define_table{
         { column = 'timestamp', sql_type = 'timestamp' },
         { column = 'member_id', type = 'bigint' },
         { column = 'member_type', type = 'text' },
-        { column = 'site_tags',  type = 'hstore' }
+        { column = 'site_tags',  type = 'jsonb' }
     }
 }
 
@@ -172,7 +172,7 @@ function fill_todo_tables(object)
       if contains({'caravan_site','camp_site'},object.tags.tourism) then
         is_cs = true;
       end
-      tables.todocs:add_row({
+      tables.todocs:insert({
         osm_id = object.id,
         osm_type = object.type,
         is_cs = is_cs
@@ -182,7 +182,7 @@ function fill_todo_tables(object)
       if (object.tags.leisure == 'playground') then
         is_pg = true;
       end
-      tables.todopg:add_row({
+      tables.todopg:insert({
         osm_id = object.id,
         osm_type = object.type,
         is_pg = is_pg
@@ -204,10 +204,10 @@ function osm2pgsql.process_node(object)
         fill_todo_tables(object)
     end
 
-    tables.point:add_row({
+    tables.point:insert({
         tags = object.tags,
         timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
-        geom = { create = 'point' }
+        geom = object:as_point()
     })
 
 end
@@ -231,18 +231,18 @@ function osm2pgsql.process_way(object)
     -- Good enough in this case as we have only a small list of allowed tags
     if object.is_closed then
     	if (has_any_of(object.tags, allowed_polygon_tags)) then
-            tables.polygon:add_row({
+            tables.polygon:insert({
                 tags = object.tags,
                 timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
-                geom = { create = 'area' }
+                geom = object:as_multipolygon()
             })
         end
     else
         if (has_any_of(object.tags, allowed_line_tags)) then
-            tables.line:add_row({
+            tables.line:insert({
                 tags = object.tags,
                 timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
-                geom = { create = 'line' }
+                geom = object:as_linestring()
             })
         end
     end
@@ -270,21 +270,21 @@ function osm2pgsql.process_relation(object)
              timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp)
            })
          if (osm2pgsql.mode == 'append') then
-           tables.todocsr:add_row({osm_id = object.id})
+           tables.todocsr:insert({osm_id = object.id})
          end
          end
       end
     end
 
-    -- Store multipolygons as polygons
+    -- OSM multipolygons
     if object.tags.type == 'multipolygon' then
          if (osm2pgsql.mode == 'append') then
              fill_todo_tables(object)
          end
-         tables.polygon:add_row({
+         tables.polygon:insert({
             tags = object.tags,
             timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
-            geom = { create = 'area' }
+            geom = object:as_multipolygon()
         })
     end
 end

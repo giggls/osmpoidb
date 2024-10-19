@@ -2,7 +2,7 @@
 #
 # This works with python2.7 and python3
 #
-# Small CGI/WSGI wrapper for BBOX -> JSON SQL query
+# Small CGI/WSGI wrapper for JSON SQL query with BBOX or site id
 #
 # (c) 2019 Sven Geggus <sven-osm@geggus-net>
 #
@@ -29,7 +29,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               'bbox', array[round(ST_XMin(geom)::numeric,7),round(ST_YMin(geom)::numeric,7),
                                             round(ST_XMax(geom)::numeric,7),round(ST_YMax(geom)::numeric,7)],
                               'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
-                              CASE WHEN tags ? 'sport' THEN delete(tags, 'sport')::jsonb || Json_build_object('sport',array_to_json(string_to_array(tags->'sport',';')))::jsonb ELSE tags::jsonb END
+                              CASE WHEN tags ? 'sport' THEN tags - 'sport' || Json_build_object('sport',array_to_json(string_to_array(tags ->> 'sport',';')))::jsonb ELSE tags::jsonb END
                               || Json_build_object('category', category) ::jsonb
                               || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
                               || CASE when post_box = True THEN Json_build_object('post_box','yes') ELSE '{}' END ::jsonb
@@ -62,7 +62,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               ELSE Json_build_object('type', 'Feature',
                               'id', 'https://www.openstreetmap.org/node/' || osm_id,
                               'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
-                              CASE WHEN tags ? 'sport' THEN delete(tags, 'sport')::jsonb || Json_build_object('sport',array_to_json(string_to_array(tags->'sport',';')))::jsonb ELSE tags::jsonb END
+                              CASE WHEN tags ? 'sport' THEN tags - 'sport' || Json_build_object('sport',array_to_json(string_to_array(tags ->> 'sport',';')))::jsonb ELSE tags::jsonb END
                               || Json_build_object('category', category) ::jsonb
                               || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
                               || CASE when post_box = True THEN Json_build_object('post_box','yes') ELSE '{}' END ::jsonb
@@ -103,7 +103,7 @@ sql_where_bbox="geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326)"
 
 sql_where_id="osm_id = %s AND osm_type = '%s'"
 
-sql_where_country="tags->'addr:country'='%s'"
+sql_where_country="tags ->> 'addr:country'='%s'"
 
 empty_geojson = b'{"type": "FeatureCollection", "features": []}\n'
 

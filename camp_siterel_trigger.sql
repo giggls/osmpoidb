@@ -11,7 +11,7 @@ BEGIN
         INSERT INTO osm_todo_cs_trigger(osm_id,osm_type)
         SELECT member_id,member_type
         FROM osm_poi_camp_siterel_extended
-        WHERE member_tags->'tourism' IN ('camp_site', 'caravan_site')
+        WHERE member_tags ->> 'tourism' IN ('camp_site', 'caravan_site')
         AND site_id=OLD.site_id;
 
         RETURN OLD;
