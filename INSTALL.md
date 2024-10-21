@@ -1,10 +1,11 @@
 # How to setup POI database
-## (development Platform is Debian 12, PostgreSQL 15, PostGIS 3.3)
+
+**Development Platform is Debian 12, PostgreSQL 15, PostGIS 3.3, OSM2PGSQL 2.0.0**
 
 * Install requiered Software Packages
 ```
-apt install rtorrent curl sudo
-apt install -t bullseye-backports osm2pgsql
+apt install aria2 curl sudo
+apt install -t bookworm-backports osm2pgsql
 ```
 
 * Create a user for replication
@@ -30,7 +31,7 @@ adduser --system --group osm
 * Download Planetfile and countr_osm_grid.sql into data directory
   ```
   cd ${OSM2BASE}/data
-  rtorrent https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent
+  aria2c https://planet.openstreetmap.org/pbf/planet-latest.osm.pbf.torrent
   curl -s https://nominatim.org/data/country_grid.sql.gz -A OpenCampingMap |gzip -d >${OSM2BASE}/data/country_osm_grid.sql
   ```
 
