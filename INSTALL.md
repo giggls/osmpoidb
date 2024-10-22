@@ -2,6 +2,8 @@
 
 **Development Platform is Debian 12, PostgreSQL 15, PostGIS 3.3, OSM2PGSQL 2.0.0**
 
+Older Versions of OSM2PGSQL will no longer work.
+
 * Install requiered Software Packages
 ```
 apt install aria2 curl sudo

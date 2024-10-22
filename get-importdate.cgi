@@ -7,10 +7,11 @@
 import wsgiref.handlers
 import psycopg2
 from datetime import timezone
+from dateutil import parser
 
 dbconnstr="dbname=poi"
 
-sql_query="select importdate from planet_osm_replication_status;"
+sql_query="select value from osm2pgsql_properties where property = 'replication_timestamp';"
 
 def application(environ, start_response):
   start_response('200 OK', [('Content-Type', 'application/json')])
@@ -23,9 +24,8 @@ def application(environ, start_response):
   cur = conn.cursor()
   cur.execute(sql_query)
   res = cur.fetchall()
-  timestamp = str(res[0][0].astimezone(timezone.utc).replace(tzinfo=None)).encode()
+  timestamp = str(parser.parse(res[0][0]).replace(tzinfo=None)).encode()
   conn.close()
-
   return([b'{ "importdate": "%s" }\n' % timestamp])
   
 
