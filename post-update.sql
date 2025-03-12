@@ -100,11 +100,6 @@ SELECT
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'amenity' = 'toilets', FALSE)) AS toilets,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND ((pt.tags ->> 'amenity' = 'shower')
-       OR ((pt.tags ->> 'amenity' = 'toilets')
-      AND (pt.tags ? 'shower')
-      AND (pt.tags ->> 'shower' != 'no'))), FALSE)) AS shower,
-  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'leisure' = 'playground', FALSE)) AS playground,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'leisure' = 'swimming_pool', FALSE)) AS swimming_pool,
@@ -140,6 +135,21 @@ SELECT
       AND (pt.tags ->> 'fridge' != 'no'))), FALSE)) AS fridge,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'leisure' = 'picnic_table', FALSE)) AS picnic_table,
+  MIN(
+    CASE
+    WHEN (pt.tags ->> 'amenity' = 'shower') AND pt.tags ->> 'hot_water' = 'yes' then 'hot'::showertype
+    WHEN (pt.tags ->> 'amenity' = 'toilets') AND pt.tags ->> 'shower' = 'hot' then 'hot'::showertype
+    WHEN (pt.tags ->> 'amenity' = 'shower') AND pt.tags ->> 'hot_water' = 'no' then 'cold'::showertype
+    WHEN (pt.tags ->> 'amenity' = 'toilets') AND pt.tags ->> 'shower' = 'cold' then 'cold'::showertype
+    WHEN (pt.tags ->> 'amenity' = 'shower') AND NOT ( pt.tags ? 'hot_water') then 'yes'::showertype
+    WHEN (pt.tags ->> 'amenity' = 'toilets') AND pt.tags ->> 'shower' = 'yes' then 'yes'::showertype
+    WHEN (poly.tags ->> 'shower' = 'hot') then 'hot'::showertype
+    WHEN (poly.tags ->> 'shower' = 'cold') then 'cold'::showertype
+    WHEN (poly.tags ->> 'shower' = 'yes') then 'yes'::showertype
+    WHEN (poly.tags ->> 'shower' = 'outdoor') then 'yes'::showertype
+    WHEN (poly.tags ->> 'shower' = 'no') then 'no'::showertype
+    ELSE 'untagged'::showertype END
+  ) as shower,
   -- This will produce a list of available sport facilities on the premises
   array_remove(array_agg(DISTINCT CASE WHEN (_st_intersects (poly.geom, pt.geom)
         AND (pt.tags ? 'sport')
@@ -184,33 +194,40 @@ SELECT
   ELSE
     'standard'
   END AS category,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  FALSE,
-  '{}',
+  FALSE AS telephone,
+  FALSE AS post_box,
+  FALSE AS drinking_water,
+  FALSE AS power_supply,
+  FALSE AS shop,
+  FALSE AS laundry,
+  FALSE AS sanitary_dump_station,
+  FALSE AS firepit,
+  FALSE AS bbq,
+  FALSE AS toilets,
+  FALSE AS playground,
+  FALSE AS swimming_pool,
+  FALSE AS golf_course,
+  FALSE AS miniature_golf,
+  FALSE AS sauna,
+  FALSE AS fast_food,
+  FALSE AS restaurant,
+  FALSE AS pub,
+  FALSE AS bar,
+  FALSE AS cabin,
+  FALSE AS static_caravan,
+  FALSE AS kitchen,
+  FALSE AS sink,
+  FALSE AS fridge,
+  FALSE AS picnic_table,
+  CASE
+    WHEN (tags ->> 'shower' = 'hot') THEN 'hot'::showertype
+    WHEN (tags ->> 'shower' = 'cold') THEN 'cold'::showertype
+    WHEN (tags ->> 'shower' = 'yes') THEN 'yes'::showertype
+    WHEN (tags ->> 'shower' = 'outdoor') THEN 'yes'::showertype
+    WHEN (tags ->> 'shower' = 'no') THEN 'no'::showertype
+    ELSE 'untagged'::showertype
+  END AS shower,
+  '{}' AS sport,
   TRUE
 FROM
   osm_todo_campsites tc,

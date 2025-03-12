@@ -30,7 +30,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                                             round(ST_XMax(geom)::numeric,7),round(ST_YMax(geom)::numeric,7)],
                               'geometry',St_asgeojson(ST_PointOnSurface(geom)) :: json, 'properties',
                               CASE WHEN tags ? 'sport' THEN tags - 'sport' || Json_build_object('sport',array_to_json(string_to_array(tags ->> 'sport',';')))::jsonb ELSE tags::jsonb END
-                              || Json_build_object('category', category) ::jsonb
+                              || Json_build_object('category', category) ::jsonb                              
                               || CASE when telephone = True THEN Json_build_object('telephone','yes') ELSE '{}' END ::jsonb
                               || CASE when post_box = True THEN Json_build_object('post_box','yes') ELSE '{}' END ::jsonb
                               || CASE when drinking_water = True THEN Json_build_object('drinking_water','yes') ELSE '{}' END ::jsonb
@@ -42,7 +42,6 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               || CASE when firepit = True THEN Json_build_object('openfire','yes') ELSE '{}' END ::jsonb
                               || CASE when bbq = True THEN Json_build_object('bbq','yes') ELSE '{}' END ::jsonb
                               || CASE when toilets = True THEN Json_build_object('toilets','yes') ELSE '{}' END ::jsonb
-                              || CASE when shower = True THEN Json_build_object('shower','yes') ELSE '{}' END ::jsonb
                               || CASE when swimming_pool = True THEN Json_build_object('swimming_pool','yes') ELSE '{}' END ::jsonb
                               || CASE when miniature_golf = True THEN Json_build_object('miniature_golf','yes') ELSE '{}' END ::jsonb
                               || CASE when golf_course = True THEN Json_build_object('golf_course','yes') ELSE '{}' END ::jsonb
@@ -57,6 +56,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               || CASE when sink = True THEN Json_build_object('sink','yes') ELSE '{}' END ::jsonb
                               || CASE when fridge = True THEN Json_build_object('fridge','yes') ELSE '{}' END ::jsonb
                               || CASE when picnic_table = True THEN Json_build_object('picnic_table','yes') ELSE '{}' END ::jsonb
+                              || CASE when shower != 'untagged' THEN Json_build_object('shower',shower) ELSE '{}' END ::jsonb
                               || CASE when sport != '{}' THEN Json_build_object('sport',sport) ELSE '{}' END ::jsonb
                               )
                               ELSE Json_build_object('type', 'Feature',
@@ -75,7 +75,6 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               || CASE when firepit = True THEN Json_build_object('openfire','yes') ELSE '{}' END ::jsonb
                               || CASE when bbq = True THEN Json_build_object('bbq','yes') ELSE '{}' END ::jsonb
                               || CASE when toilets = True THEN Json_build_object('toilets','yes') ELSE '{}' END ::jsonb
-                              || CASE when shower = True THEN Json_build_object('shower','yes') ELSE '{}' END ::jsonb
                               || CASE when swimming_pool = True THEN Json_build_object('swimming_pool','yes') ELSE '{}' END ::jsonb
                               || CASE when miniature_golf = True THEN Json_build_object('miniature_golf','yes') ELSE '{}' END ::jsonb
                               || CASE when golf_course = True THEN Json_build_object('golf_course','yes') ELSE '{}' END ::jsonb
@@ -90,6 +89,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               || CASE when sink = True THEN Json_build_object('sink','yes') ELSE '{}' END ::jsonb
                               || CASE when fridge = True THEN Json_build_object('fridge','yes') ELSE '{}' END ::jsonb
                               || CASE when picnic_table = True THEN Json_build_object('picnic_table','yes') ELSE '{}' END ::jsonb
+                              || CASE when shower != 'untagged' THEN Json_build_object('shower',shower) ELSE '{}' END ::jsonb
                               || CASE when sport != '{}' THEN Json_build_object('sport',sport) ELSE '{}' END ::jsonb
                               )
                               END

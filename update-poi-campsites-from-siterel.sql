@@ -193,27 +193,6 @@ WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
 
--- showers or toilets with shower != 'no' in site relations
-UPDATE
-  osm_poi_campsites cs
-SET
-  shower = TRUE
-FROM (
-  SELECT
-    s.member_id,
-    s.member_type
-  FROM
-    osm_poi_camp_siterel_extended s
-    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
-      AND s.member_tags ->> 'tourism' = 'camp_site'
-      AND ((r.member_tags ->> 'amenity' = 'shower')
-        OR ((r.member_tags ->> 'amenity' = 'toilets')
-          AND (r.member_tags ? 'shower')
-          AND (r.member_tags ->> 'shower' != 'no')))) sr
-WHERE
-  cs.osm_id = sr.member_id
-  AND cs.osm_type = sr.member_type;
-
 -- playground in site relations
 UPDATE
   osm_poi_campsites cs
@@ -394,11 +373,12 @@ WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
 
+
 -- sinks or kitchen with sink != 'no' in site relations
 UPDATE
   osm_poi_campsites cs
 SET
-  shower = TRUE
+  sink = TRUE
 FROM (
   SELECT
     s.member_id,
@@ -419,7 +399,7 @@ WHERE
 UPDATE
   osm_poi_campsites cs
 SET
-  shower = TRUE
+  fridge = TRUE
 FROM (
   SELECT
     s.member_id,
