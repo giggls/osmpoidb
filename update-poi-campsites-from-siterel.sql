@@ -193,6 +193,41 @@ WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
 
+-- showers or toilets with shower tag in site relations
+UPDATE
+  osm_poi_campsites cs
+SET
+  shower = showertype
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type,
+    MIN(
+      CASE
+        WHEN (r.member_tags ->> 'amenity' = 'shower') AND r.member_tags ->> 'hot_water' = 'yes' then 'hot'::showertype
+        WHEN (r.member_tags ->> 'amenity' = 'toilets') AND r.member_tags ->> 'shower' = 'hot' then 'hot'::showertype
+        WHEN (r.member_tags ->> 'amenity' = 'shower') AND r.member_tags ->> 'hot_water' = 'no' then 'cold'::showertype
+        WHEN (r.member_tags ->> 'amenity' = 'toilets') AND r.member_tags ->> 'shower' = 'cold' then 'cold'::showertype    
+        WHEN (r.member_tags ->> 'amenity' = 'shower') AND NOT ( r.member_tags ? 'hot_water') then 'yes'::showertype
+        WHEN (r.member_tags ->> 'amenity' = 'toilets') AND r.member_tags ->> 'shower' = 'yes' then 'yes'::showertype
+        WHEN (s.member_tags ->> 'shower' = 'hot') then 'hot'::showertype
+        WHEN (s.member_tags ->> 'shower' = 'cold') then 'cold'::showertype
+        WHEN (s.member_tags ->> 'shower' = 'yes') then 'yes'::showertype
+        WHEN (s.member_tags ->> 'shower' = 'outdoor') then 'yes'::showertype
+        WHEN (s.member_tags ->> 'shower' = 'no') then 'no'::showertype
+      ELSE 'untagged'::showertype END
+    ) as showertype
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'shower')
+        OR ((r.member_tags ->> 'amenity' = 'toilets')
+          AND (r.member_tags ? 'shower'))) GROUP BY s.member_id,s.member_type) sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
 -- playground in site relations
 UPDATE
   osm_poi_campsites cs
