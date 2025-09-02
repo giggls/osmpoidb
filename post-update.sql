@@ -709,6 +709,10 @@ DELETE FROM osm_todo_campsites;
 DELETE FROM osm_todo_cs_trigger;
 DELETE FROM osm_todo_camp_siterel;
 
+-- Finally remove all stuff where tagging has changed form 'camp_site' or 'caravan_site'
+-- to something else because these are then no longer camp-sites
+DELETE FROM osm_poi_campsites WHERE tags->>'tourism' NOT IN ('camp_site', 'caravan_site');
+
 
 -- Post update stuff for TABLE osm_poi_playgrounds
 
@@ -788,3 +792,7 @@ COMMIT;
 
 DELETE FROM osm_todo_playgrounds;
 DELETE FROM osm_todo_pg_trigger;
+
+-- Finally remove all stuff where tagging has changed form leisure=playground
+-- to something else because these are then no longer playgrounds
+DELETE FROM osm_poi_playgrounds WHERE NOT tags->>'leisure'='playground';
