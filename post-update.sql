@@ -422,7 +422,7 @@ WHERE
 UPDATE
   osm_poi_campsites cs
 SET
-  shower = TRUE
+  shower = 'yes'
 FROM (
   SELECT
     s.member_id,
@@ -435,6 +435,44 @@ FROM (
         OR ((r.member_tags ->> 'amenity' = 'toilets')
           AND (r.member_tags ? 'shower')
           AND (r.member_tags ->> 'shower' != 'no')))) sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- showers with hot_water=no
+UPDATE
+  osm_poi_campsites cs
+SET
+  shower = 'cold'
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'shower')
+          AND (r.member_tags ->> 'hot_water' = 'no'))) sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- showers with hot_water=yes
+UPDATE
+  osm_poi_campsites cs
+SET
+  shower = 'hot'
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND ((r.member_tags ->> 'amenity' = 'shower')
+          AND (r.member_tags ->> 'hot_water' = 'yes'))) sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
