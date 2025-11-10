@@ -118,11 +118,11 @@ WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
 
--- sanitary_dump_station in site relations
+-- sanitary_dump_station in site relations 1(4)
 UPDATE
   osm_poi_campsites cs
 SET
-  sanitary_dump_station = TRUE
+  sanitary_dump_station = '{}'
 FROM (
   SELECT
     s.member_id,
@@ -135,6 +135,63 @@ FROM (
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
+
+-- sanitary_dump_station in site relations 2(4)
+UPDATE
+  osm_poi_campsites cs
+SET
+  sanitary_dump_station = array_append(sanitary_dump_station, 'grey_water')
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'sanitary_dump_station'
+      AND r.member_tags ->> 'sanitary_dump_station:grey_water' = 'yes') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- sanitary_dump_station in site relations 3(4)
+UPDATE
+  osm_poi_campsites cs
+SET
+  sanitary_dump_station = array_append(sanitary_dump_station, 'chemical_toilet')
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'sanitary_dump_station'
+      AND r.member_tags ->> 'sanitary_dump_station:chemical_toilet' = 'yes') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- sanitary_dump_station in site relations 4(4)
+UPDATE
+  osm_poi_campsites cs
+SET
+  sanitary_dump_station = '{yes}'
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'sanitary_dump_station') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type
+  AND cs.sanitary_dump_station = '{}';
 
 -- firepit in site relations
 UPDATE

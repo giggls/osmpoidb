@@ -47,6 +47,48 @@ WHERE osm_poi_campsites.osm_id = osm_todo_campsites.osm_id
 AND osm_poi_campsites.osm_type = osm_todo_campsites.osm_type;
 
 INSERT INTO osm_poi_campsites
+SELECT                                                                   
+osm_id,                                                                  
+geom,                                                                    
+tags,                                                                    
+timestamp,                                                               
+osm_type,                                                                
+category,                                                                
+telephone,                                                               
+post_box,                                                                
+drinking_water,                                                          
+power_supply,                                                            
+shop,                                                                    
+laundry,                                                                 
+CASE WHEN                                                                
+  NOT cs_has_dump_station THEN ARRAY['no']                               
+  WHEN cs_has_dump_station AND dump_station IS NULL then ARRAY['yes']    
+  WHEN dump_station AND COALESCE(grey_water,chemical_toilet) IS NOT NULL THEN array_remove(ARRAY[grey_water,chemical_toilet],NULL)
+  WHEN dump_station THEN ARRAY['yes']                                    
+  ELSE ARRAY[]::text[]                                                   
+END as sanitary_dump_station,                                            
+firepit,                                                                 
+bbq,                                                                     
+toilets,                                                                 
+playground,                                                              
+swimming_pool,                                                           
+golf_course,                                                             
+miniature_golf,                                                          
+sauna,                                                                   
+fast_food,                                                               
+restaurant,                                                              
+pub,                                                                     
+bar,                                                                     
+cabin,
+static_caravan,
+kitchen,
+sink,
+fridge,
+picnic_table,
+shower,
+sport,
+visible
+FROM (
 SELECT
   poly.osm_id AS osm_id,
   poly.geom AS geom,
@@ -88,8 +130,10 @@ SELECT
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND ((pt.tags ->> 'amenity' = 'washing_machine')
        OR (pt.tags ->> 'shop' = 'laundry')), FALSE)) AS laundry,
-  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
-      AND pt.tags ->> 'amenity' = 'sanitary_dump_station', FALSE)) AS sanitary_dump_station,
+  CASE WHEN bool_or((pt.tags ->> 'sanitary_dump_station:grey_water'='yes') AND (pt.tags ->> 'amenity'='sanitary_dump_station')) THEN 'grey_water' END as grey_water,
+  CASE WHEN bool_or((pt.tags ->> 'sanitary_dump_station:chemical_toilet'='yes') AND (pt.tags ->> 'amenity'='sanitary_dump_station')) THEN 'chemical_toilet' END as chemical_toilet,
+  bool_or(pt.tags ->> 'amenity'='sanitary_dump_station') as dump_station,
+  poly.tags ->> 'sanitary_dump_station' = 'yes' as cs_has_dump_station,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'leisure' = 'firepit', FALSE)) AS firepit,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
@@ -200,7 +244,10 @@ SELECT
   FALSE AS power_supply,
   FALSE AS shop,
   FALSE AS laundry,
-  FALSE AS sanitary_dump_station,
+  NULL AS grey_water,
+  NULL AS chemical_toilet,
+  FALSE AS dump_station,  
+  NULL AS cs_has_dump_station,
   FALSE AS firepit,
   FALSE AS bbq,
   FALSE AS toilets,
@@ -232,7 +279,8 @@ SELECT
 FROM
   osm_todo_campsites tc,
   osm_poi_point pp
-WHERE pp.osm_id=tc.osm_id AND pp.osm_type=tc.osm_type;
+WHERE pp.osm_id=tc.osm_id AND pp.osm_type=tc.osm_type
+);
 
 -- Now we also need to update those sites which are part of a new or modified site relation
 UPDATE
@@ -346,11 +394,11 @@ WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
 
--- sanitary_dump_station in site relations
+-- sanitary_dump_station in site relations 1(4)
 UPDATE
   osm_poi_campsites cs
 SET
-  sanitary_dump_station = TRUE
+  sanitary_dump_station = '{}'
 FROM (
   SELECT
     s.member_id,
@@ -363,6 +411,63 @@ FROM (
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
+
+-- sanitary_dump_station in site relations 2(4)
+UPDATE
+  osm_poi_campsites cs
+SET
+  sanitary_dump_station = array_append(sanitary_dump_station, 'grey_water')
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'sanitary_dump_station'
+      AND r.member_tags ->> 'sanitary_dump_station:grey_water' = 'yes') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- sanitary_dump_station in site relations 3(4)
+UPDATE
+  osm_poi_campsites cs
+SET
+  sanitary_dump_station = array_append(sanitary_dump_station, 'chemical_toilet')
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'sanitary_dump_station'
+      AND r.member_tags ->> 'sanitary_dump_station:chemical_toilet' = 'yes') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- sanitary_dump_station in site relations 4(4)
+UPDATE
+  osm_poi_campsites cs
+SET
+  sanitary_dump_station = '{yes}'
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'amenity' = 'sanitary_dump_station') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type
+  AND cs.sanitary_dump_station = '{}';
 
 -- firepit in site relations
 UPDATE

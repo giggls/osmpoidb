@@ -65,6 +65,46 @@ SELECT * FROM osm_poi_line;
 
 CREATE TABLE osm_poi_campsites_new AS
 SELECT
+osm_id,
+geom,
+tags,
+timestamp,
+osm_type,
+category,
+telephone,
+post_box,
+drinking_water,
+power_supply,
+shop,
+laundry,
+CASE
+  WHEN dump_station AND COALESCE(grey_water,chemical_toilet) IS NOT NULL THEN array_remove(ARRAY[grey_water,chemical_toilet],NULL)
+  WHEN dump_station THEN ARRAY['yes']
+  ELSE ARRAY[]::text[]
+END as sanitary_dump_station,
+firepit,
+bbq,
+toilets,
+playground,
+swimming_pool,
+golf_course,
+miniature_golf,
+sauna,
+fast_food,
+restaurant,
+pub,
+bar,
+cabin,
+static_caravan,
+kitchen,
+sink,
+fridge,
+picnic_table,
+shower,
+sport,
+visible
+FROM (
+SELECT
   poly.osm_id AS osm_id,
   poly.geom AS geom,
   unify_tags (poly.tags, poly.geom) AS tags,
@@ -99,7 +139,9 @@ SELECT
       AND pt.tags ->> 'shop' != 'laundry'), FALSE)) AS shop,
   Bool_or(COALESCE(((pt.tags ->> 'amenity' = 'washing_machine')
        OR (pt.tags ->> 'shop' = 'laundry')), FALSE)) AS laundry,
-  Bool_or(COALESCE(pt.tags ->> 'amenity' = 'sanitary_dump_station', FALSE)) AS sanitary_dump_station,
+  CASE WHEN bool_or((pt.tags ->> 'sanitary_dump_station:grey_water'='yes') AND (pt.tags ->> 'amenity'='sanitary_dump_station')) THEN 'grey_water' END as grey_water,
+  CASE WHEN bool_or((pt.tags ->> 'sanitary_dump_station:chemical_toilet'='yes') AND (pt.tags ->> 'amenity'='sanitary_dump_station')) THEN 'chemical_toilet' END as chemical_toilet,
+  bool_or(pt.tags ->> 'amenity'='sanitary_dump_station') as dump_station,
   Bool_or(COALESCE(pt.tags ->> 'leisure' = 'firepit', FALSE)) AS firepit,
   Bool_or(COALESCE(((pt.tags ->> 'amenity' = 'bbq')
        OR ((pt.tags ->> 'leisure' = 'firepit')
@@ -147,7 +189,7 @@ SELECT
         AND (pt.osm_id != poly.osm_id)) THEN
         pt.tags ->> 'sport'
       END), NULL) AS sport,
-  TRUE as visible
+      TRUE as visible
 FROM
   osm_poi_poly AS poly
   LEFT JOIN osm_poi_ptpy AS pt ON st_intersects(poly.geom, pt.geom)
@@ -190,7 +232,9 @@ SELECT
   FALSE AS power_supply,
   FALSE AS shop,
   FALSE AS laundry,
-  FALSE AS sanitary_dump_station,
+  NULL AS grey_water,
+  NULL AS chemical_toilet,
+  FALSE AS dump_station,
   FALSE AS firepit,
   FALSE AS bbq,
   FALSE AS toilets,
@@ -222,7 +266,8 @@ SELECT
 FROM
   osm_poi_point
 WHERE (tags ? 'tourism')
-AND (tags ->> 'tourism' IN ('camp_site', 'caravan_site'));
+AND (tags ->> 'tourism' IN ('camp_site', 'caravan_site'))
+);
 
 -- geometry index
 CREATE INDEX osm_poi_campsites_geom_new ON osm_poi_campsites_new USING GIST (geom);
