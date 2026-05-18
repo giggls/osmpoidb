@@ -51,7 +51,5 @@ if __name__ == '__main__':
     server.serve_forever()
   else:
     import wsgiref.handlers
-    wsgiref.handlers.CGIHandler().run(application)
-
 
   wsgiref.handlers.CGIHandler().run(application)
