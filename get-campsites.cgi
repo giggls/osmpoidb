@@ -184,7 +184,10 @@ def application(env, start_response):
     q = sql_where_bbox % (coords[0],coords[1],coords[2],coords[3])
   else:
     if 'country' in params:
-      q = sql_where_country % params['country'][0]
+      if params['country'][0] == 'all':
+        q = 'True'
+      else:
+        q = sql_where_country % params['country'][0]
     else:
       q = sql_where_id % (params['osm_id'][0],params['osm_type'][0][0].upper())
   
