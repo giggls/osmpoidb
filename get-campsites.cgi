@@ -16,7 +16,7 @@
 #
 # ./get-campsites.cgi --server
 # 
-# In thisd case data can then be fetched like this
+# In this case data can then be fetched like this
 # GET:
 # curl "http://localhost:8000/test?osm_id=115074273&osm_type=way" |jq .
 # POST:
@@ -80,15 +80,15 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               END
         AS    feature
         FROM  osm_poi_campsites
-        WHERE %s
+        %s
 ) features;
 """
 
-sql_where_bbox="geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326)"
+sql_where_bbox=" WHERE geom && St_setsrid('BOX3D(%f %f, %f %f)' ::box3d, 4326)"
 
-sql_where_id="osm_id = %s AND osm_type = '%s'"
+sql_where_id=" WHERE osm_id = %s AND osm_type = '%s'"
 
-sql_where_country="tags ->> 'addr:country'='%s'"
+sql_where_country=" WHERE tags ->> 'addr:country'='%s'"
 
 empty_geojson = b'{"type": "FeatureCollection", "features": []}\n'
 
@@ -181,17 +181,18 @@ def application(env, start_response):
   
   # if bbox is given country is ignored
   if 'bbox' in params:
-    q = sql_where_bbox % (coords[0],coords[1],coords[2],coords[3])
+    where_clause = sql_where_bbox % (coords[0],coords[1],coords[2],coords[3])
   else:
     if 'country' in params:
+      # no SQL where clause in case of country=all just output all sites
       if params['country'][0] == 'all':
-        q = 'True'
+        where_clause = ''
       else:
-        q = sql_where_country % params['country'][0]
+        where_clause = sql_where_country % params['country'][0]
     else:
-      q = sql_where_id % (params['osm_id'][0],params['osm_type'][0][0].upper())
+      where_clause = sql_where_id % (params['osm_id'][0],params['osm_type'][0][0].upper())
   
-  q = sql_query % q
+  q = sql_query % where_clause
   cur = conn.cursor()
   cur.execute(q)
   res = cur.fetchall()
