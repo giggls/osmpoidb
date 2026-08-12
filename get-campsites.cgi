@@ -52,6 +52,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               || CASE when swimming_pool = True THEN Json_build_object('swimming_pool','yes') ELSE '{}' END ::jsonb
                               || CASE when miniature_golf = True THEN Json_build_object('miniature_golf','yes') ELSE '{}' END ::jsonb
                               || CASE when golf_course = True THEN Json_build_object('golf_course','yes') ELSE '{}' END ::jsonb
+                              || CASE when bowling_alley = True THEN Json_build_object('bowling_alley','yes') ELSE '{}' END ::jsonb
                               || CASE when sauna = True THEN Json_build_object('sauna','yes') ELSE '{}' END ::jsonb
                               || CASE when fast_food = True THEN Json_build_object('fast_food','yes') ELSE '{}' END ::jsonb
                               || CASE when restaurant = True THEN Json_build_object('restaurant','yes') ELSE '{}' END ::jsonb

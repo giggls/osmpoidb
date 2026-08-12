@@ -357,6 +357,24 @@ WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
 
+-- bowling_alley in site relations
+UPDATE
+  osm_poi_campsites cs
+SET
+  bowling_alley = TRUE
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'bowling_alley') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
 -- sauna in site relations
 UPDATE
   osm_poi_campsites cs

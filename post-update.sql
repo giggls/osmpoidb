@@ -47,38 +47,39 @@ WHERE osm_poi_campsites.osm_id = osm_todo_campsites.osm_id
 AND osm_poi_campsites.osm_type = osm_todo_campsites.osm_type;
 
 INSERT INTO osm_poi_campsites
-SELECT                                                                   
-osm_id,                                                                  
-geom,                                                                    
-tags,                                                                    
-timestamp,                                                               
-osm_type,                                                                
-category,                                                                
-telephone,                                                               
-post_box,                                                                
-drinking_water,                                                          
-power_supply,                                                            
-shop,                                                                    
-laundry,                                                                 
-CASE WHEN                                                                
-  NOT cs_has_dump_station THEN ARRAY['no']                               
-  WHEN cs_has_dump_station AND dump_station IS NULL then ARRAY['yes']    
+SELECT
+osm_id,
+geom,
+tags,
+timestamp,
+osm_type,
+category,
+telephone,
+post_box,
+drinking_water,
+power_supply,
+shop,
+laundry,
+CASE WHEN
+  NOT cs_has_dump_station THEN ARRAY['no']
+  WHEN cs_has_dump_station AND dump_station IS NULL then ARRAY['yes']
   WHEN dump_station AND COALESCE(grey_water,chemical_toilet) IS NOT NULL THEN array_remove(ARRAY[grey_water,chemical_toilet],NULL)
-  WHEN dump_station THEN ARRAY['yes']                                    
-  ELSE ARRAY[]::text[]                                                   
-END as sanitary_dump_station,                                            
-firepit,                                                                 
-bbq,                                                                     
-toilets,                                                                 
-playground,                                                              
-swimming_pool,                                                           
-golf_course,                                                             
-miniature_golf,                                                          
-sauna,                                                                   
-fast_food,                                                               
-restaurant,                                                              
-pub,                                                                     
-bar,                                                                     
+  WHEN dump_station THEN ARRAY['yes']
+  ELSE ARRAY[]::text[]
+END as sanitary_dump_station,
+firepit,
+bbq,
+toilets,
+playground,
+swimming_pool,
+golf_course,
+miniature_golf,
+bowling_alley,
+sauna,
+fast_food,
+restaurant,
+pub,
+bar,
 cabin,
 static_caravan,
 kitchen,
@@ -151,6 +152,8 @@ SELECT
       AND pt.tags ->> 'leisure' = 'golf_course', FALSE)) AS golf_course,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'leisure' = 'miniature_golf', FALSE)) AS miniature_golf,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND pt.tags ->> 'leisure' = 'miniature_golf', FALSE)) AS bowling_alley,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'leisure' = 'sauna', FALSE)) AS sauna,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
@@ -246,7 +249,7 @@ SELECT
   FALSE AS laundry,
   NULL AS grey_water,
   NULL AS chemical_toilet,
-  FALSE AS dump_station,  
+  FALSE AS dump_station,
   NULL AS cs_has_dump_station,
   FALSE AS firepit,
   FALSE AS bbq,
@@ -255,6 +258,7 @@ SELECT
   FALSE AS swimming_pool,
   FALSE AS golf_course,
   FALSE AS miniature_golf,
+  FALSE AS bowling_alley,
   FALSE AS sauna,
   FALSE AS fast_food,
   FALSE AS restaurant,
@@ -650,6 +654,24 @@ FROM (
     INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
       AND s.member_tags ->> 'tourism' = 'camp_site'
       AND r.member_tags ->> 'leisure' = 'miniature_golf') sr
+WHERE
+  cs.osm_id = sr.member_id
+  AND cs.osm_type = sr.member_type;
+
+-- bowling_alley in site relations
+UPDATE
+  osm_poi_campsites cs
+SET
+  bowling_alley = TRUE
+FROM (
+  SELECT
+    s.member_id,
+    s.member_type
+  FROM
+    osm_poi_camp_siterel_extended s
+    INNER JOIN osm_poi_camp_siterel_extended r ON s.site_id = r.site_id
+      AND s.member_tags ->> 'tourism' = 'camp_site'
+      AND r.member_tags ->> 'leisure' = 'bowling_alley') sr
 WHERE
   cs.osm_id = sr.member_id
   AND cs.osm_type = sr.member_type;
