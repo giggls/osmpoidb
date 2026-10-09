@@ -961,3 +961,6 @@ DELETE FROM osm_todo_pg_trigger;
 -- Finally remove all stuff where tagging has changed form leisure=playground
 -- to something else because these are then no longer playgrounds
 DELETE FROM osm_poi_playgrounds WHERE (NOT tags ? 'leisure') OR tags->>'leisure'!='playground';
+
+
+REFRESH MATERIALIZED VIEW osm_poi_shelter;

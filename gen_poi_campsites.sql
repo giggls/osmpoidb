@@ -97,6 +97,7 @@ pub,
 bar,
 cabin,
 static_caravan,
+shelter,
 kitchen,
 sink,
 fridge,
@@ -161,6 +162,10 @@ SELECT
   Bool_or(COALESCE(pt.tags ->> 'amenity' = 'bar', FALSE)) AS bar,
   Bool_or(COALESCE(pt.tags ->> 'building' = 'cabin', FALSE)) AS cabin,
   Bool_or(COALESCE(pt.tags ->> 'building' = 'static_caravan', FALSE)) AS static_caravan,
+  Bool_or(COALESCE(((pt.tags ->> 'tourism' = 'wilderness_hut')
+       OR ((pt.tags ->> 'amenity' = 'shelter')
+      AND (pt.tags ? 'shelter_type')
+      AND (pt.tags ->> 'shelter_type' IN ('basic_hut', 'lean_to')))), FALSE)) AS shelter,
   Bool_or(COALESCE(pt.tags ->> 'amenity' = 'kitchen', FALSE)) AS kitchen,
   Bool_or(COALESCE(((pt.tags ->> 'amenity' = 'sink')
        OR ((pt.tags ->> 'amenity' = 'kitchen')
@@ -252,6 +257,7 @@ SELECT
   FALSE AS bar,
   FALSE AS cabin,
   FALSE AS static_caravan,
+  FALSE AS shelter,
   FALSE AS kitchen,
   FALSE AS sink,
   FALSE AS fridge,

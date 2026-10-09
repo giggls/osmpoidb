@@ -60,6 +60,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               || CASE when bar = True THEN Json_build_object('bar','yes') ELSE '{}' END ::jsonb
                               || CASE when static_caravan = True THEN Json_build_object('static_caravans','yes') ELSE '{}' END ::jsonb
                               || CASE when cabin = True THEN Json_build_object('cabins','yes') ELSE '{}' END ::jsonb
+                              || CASE when shelter = True THEN Json_build_object('shelter','yes') ELSE '{}' END ::jsonb
                               || CASE when kitchen = True THEN Json_build_object('kitchen','yes') ELSE '{}' END ::jsonb
                               || CASE when sink = True THEN Json_build_object('sink','yes') ELSE '{}' END ::jsonb
                               || CASE when fridge = True THEN Json_build_object('fridge','yes') ELSE '{}' END ::jsonb
@@ -80,7 +81,7 @@ FROM   (SELECT CASE WHEN (osm_type != 'N')
                               )
                               END
         AS    feature
-        FROM  osm_poi_campsites
+        FROM  %s
         %s
 ) features;
 """
@@ -193,7 +194,7 @@ def application(env, start_response):
     else:
       where_clause = sql_where_id % (params['osm_id'][0],params['osm_type'][0][0].upper())
   
-  q = sql_query % where_clause
+  q = sql_query % (args.table,where_clause)
   cur = conn.cursor()
   cur.execute(q)
   res = cur.fetchall()
@@ -210,6 +211,7 @@ if __name__ == '__main__':
   parser.add_argument("-c", "--dbconnstr", help="database connection string e.g. dbname=poitest")
   parser.add_argument("-s", "--server", action='store_true', help="run as standalone server")
   parser.add_argument("-p", "--port", type=int, default=8000, help="port for standalone server")
+  parser.add_argument("-t", "--table", default="osm_poi_campsites_and_shelter", help="table to select from")
   args = parser.parse_args()
 
   # overwrite DB connection string if requested
