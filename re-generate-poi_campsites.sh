@@ -19,3 +19,4 @@ echo "ALTER TABLE osm_todo_campsites ADD UNIQUE (osm_type,osm_id);" |psql $DBNAM
 psql -f point-poly-trigger.sql $DBNAME
 psql -f camp_siterel_trigger.sql $DBNAME
 
+psql -f gen_shelter_views.sql $DBNAME

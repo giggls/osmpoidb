@@ -27,6 +27,7 @@ import json
 import urllib.parse
 
 dbconnstr="dbname=poi"
+dbtable="osm_poi_campsites_and_shelter"
 
 sql_query="""
 SELECT Jsonb_build_object('type', 'FeatureCollection', 'features',
@@ -194,7 +195,7 @@ def application(env, start_response):
     else:
       where_clause = sql_where_id % (params['osm_id'][0],params['osm_type'][0][0].upper())
   
-  q = sql_query % (args.table,where_clause)
+  q = sql_query % (dbtable,where_clause)
   cur = conn.cursor()
   cur.execute(q)
   res = cur.fetchall()
@@ -211,12 +212,16 @@ if __name__ == '__main__':
   parser.add_argument("-c", "--dbconnstr", help="database connection string e.g. dbname=poitest")
   parser.add_argument("-s", "--server", action='store_true', help="run as standalone server")
   parser.add_argument("-p", "--port", type=int, default=8000, help="port for standalone server")
-  parser.add_argument("-t", "--table", default="osm_poi_campsites_and_shelter", help="table to select from")
+  parser.add_argument("-t", "--table", help="table to select from")
   args = parser.parse_args()
 
   # overwrite DB connection string if requested
   if args.dbconnstr is not None:
     dbconnstr=args.dbconnstr
+    
+  # overwrite default table if requested
+  if args.table is not None:
+    dbtable=args.table
 
   if args.server:
     import wsgiref.simple_server
