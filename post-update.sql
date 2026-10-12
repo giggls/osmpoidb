@@ -82,6 +82,7 @@ pub,
 bar,
 cabin,
 static_caravan,
+shelter,
 kitchen,
 sink,
 fridge,
@@ -168,7 +169,12 @@ SELECT
       AND pt.tags ->> 'building' = 'cabin', FALSE)) AS cabin,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'building' = 'static_caravan', FALSE)) AS static_caravan,
-    Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
+      AND ((pt.tags ->> 'tourism' = 'wilderness_hut')
+       OR ((pt.tags ->> 'amenity' = 'shelter')
+            AND (pt.tags ? 'shelter_type')
+            AND (pt.tags ->> 'shelter_type' IN ('basic_hut', 'lean_to')))), FALSE)) AS shelter,
+  Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND pt.tags ->> 'amenity' = 'kitchen', FALSE)) AS kitchen,
   Bool_or(COALESCE(_st_intersects (poly.geom, pt.geom)
       AND ((pt.tags ->> 'amenity' = 'sink')
@@ -266,6 +272,7 @@ SELECT
   FALSE AS bar,
   FALSE AS cabin,
   FALSE AS static_caravan,
+  FALSE AS shelter,
   FALSE AS kitchen,
   FALSE AS sink,
   FALSE AS fridge,
