@@ -872,19 +872,17 @@ WHERE
   AND cs.osm_id = sr.member_id;
 
 
+-- Finally remove all stuff where tagging has changed form 'camp_site' or 'caravan_site'
+-- to something else because these are then no longer camp-sites
+DELETE FROM osm_poi_campsites WHERE (NOT tags ? 'tourism') OR tags->>'tourism' NOT IN ('camp_site', 'caravan_site');
 
-
+REFRESH MATERIALIZED VIEW osm_poi_shelter;
 
 COMMIT;
 
 DELETE FROM osm_todo_campsites;
 DELETE FROM osm_todo_cs_trigger;
 DELETE FROM osm_todo_camp_siterel;
-
--- Finally remove all stuff where tagging has changed form 'camp_site' or 'caravan_site'
--- to something else because these are then no longer camp-sites
-DELETE FROM osm_poi_campsites WHERE (NOT tags ? 'tourism') OR tags->>'tourism' NOT IN ('camp_site', 'caravan_site');
-
 
 -- Post update stuff for TABLE osm_poi_playgrounds
 
@@ -969,5 +967,3 @@ DELETE FROM osm_todo_pg_trigger;
 -- to something else because these are then no longer playgrounds
 DELETE FROM osm_poi_playgrounds WHERE (NOT tags ? 'leisure') OR tags->>'leisure'!='playground';
 
-
-REFRESH MATERIALIZED VIEW osm_poi_shelter;

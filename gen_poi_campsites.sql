@@ -48,6 +48,7 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+ALTER FUNCTION unify_tags (tin jsonb, geom geometry) SET search_path = public;
 
 -- a view to point and polygon shaped POI objects
 CREATE OR REPLACE VIEW osm_poi_ptpy AS
@@ -289,7 +290,7 @@ CREATE INDEX osm_poi_campsites_osm_type_new ON osm_poi_campsites_new (osm_type);
 
 GRANT SELECT ON osm_poi_campsites_new TO public;
 
-DROP TABLE IF EXISTS osm_poi_campsites;
+DROP TABLE IF EXISTS osm_poi_campsites CASCADE;
 ALTER TABLE osm_poi_campsites_new RENAME TO osm_poi_campsites;
 ALTER INDEX osm_poi_campsites_geom_new RENAME TO osm_poi_campsites_geom;
 ALTER INDEX osm_poi_campsites_osm_type_new RENAME TO osm_poi_campsites_osm_type;

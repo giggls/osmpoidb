@@ -5,7 +5,7 @@ DROP VIEW IF EXISTS osm_poi_campsites_and_shelter;
 DROP MATERIALIZED VIEW IF EXISTS osm_poi_shelter;
 
 CREATE MATERIALIZED view osm_poi_shelter AS
-SELECT osm_id, geom, tags, timestamp, osm_type from osm_poi_all
+SELECT osm_id, geom, unify_tags(tags, geom) as tags, timestamp, osm_type from osm_poi_all
 WHERE ((tags ? 'amenity') AND  tags ->> 'amenity' = 'shelter'
 AND tags ->> 'shelter_type' in ('basic_hut', 'lean_to')
 AND (NOT (tags ? 'sleeping') OR (tags ->> 'sleeping' != 'no')) OR
@@ -22,7 +22,7 @@ UNION ALL
 SELECT
   osm_id,
   geom,
-  unify_tags(tags, geom) AS tags,
+  tags,
   timestamp,
   osm_type,
   'shelter',
@@ -64,3 +64,5 @@ SELECT
   '{}' AS sport,
   TRUE
 FROM osm_poi_shelter;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO public;
