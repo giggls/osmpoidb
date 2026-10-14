@@ -1,20 +1,5 @@
--- A materialized view is sufficient for shelters
+-- Shelter table is currently generated directly from osm2pgsql
 -- as we currently need no poi in poi feature
-
-DROP VIEW IF EXISTS osm_poi_campsites_and_shelter;
-DROP MATERIALIZED VIEW IF EXISTS osm_poi_shelter;
-
-CREATE MATERIALIZED view osm_poi_shelter AS
-SELECT osm_id, geom, unify_tags(tags, geom) as tags, timestamp, osm_type from osm_poi_all
-WHERE ((tags ? 'amenity') AND  tags ->> 'amenity' = 'shelter'
-AND tags ->> 'shelter_type' in ('basic_hut', 'lean_to')
-AND (NOT (tags ? 'sleeping') OR (tags ->> 'sleeping' != 'no')) OR
-(tags ? 'tourism') AND (tags ->> 'tourism' = 'wilderness_hut'))
-AND NOT EXISTS (
-    SELECT 1
-    FROM osm_poi_campsites c
-    WHERE ST_Intersects(osm_poi_all.geom, c.geom)
-    AND ST_GeometryType(c.geom) = 'ST_MultiPolygon');
 
 CREATE VIEW osm_poi_campsites_and_shelter AS
 SELECT * from osm_poi_campsites
@@ -66,3 +51,15 @@ SELECT
 FROM osm_poi_shelter;
 
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO public;
+
+-- remove shelters located inside camp_site or caravan_site polygons
+-- this also needs to be called in post-update.sql
+DELETE from osm_poi_shelter s
+WHERE dirty
+AND EXISTS (
+  SELECT 1
+  FROM osm_poi_campsites c
+  WHERE ST_Intersects(s.geom, c.geom)
+  AND c.osm_type != 'N'
+);
+UPDATE osm_poi_shelter SET dirty=false WHERE dirty;

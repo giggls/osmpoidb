@@ -27,3 +27,5 @@ CREATE INDEX osm_poi_rels_playground_index ON osm_poi_poly USING GIST (geom) WHE
 CREATE INDEX osm_poi_ways_playground_index ON osm_poi_poly USING GIST (geom) WHERE (tags ->> 'leisure') = 'playground' AND osm_type = 'W';
 
 
+-- Partial Index for dirty flag on osm_poi_shelter
+CREATE INDEX osm_poi_shelter_geom_dirty_index ON osm_poi_shelter USING gist (geom) WHERE dirty;

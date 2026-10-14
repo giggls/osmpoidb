@@ -1,6 +1,6 @@
 -- lua script for osm2pgsql to import and update osmpoidb
 --
--- (c) 2022-2024 Sven Geggus <sven-osm@geggus-net>
+-- (c) 2022-2026 Sven Geggus <sven-osm@geggus-net>
 
 -- Unify the following keys in the database
 local unified_keys = {
@@ -99,7 +99,7 @@ tables.point = osm2pgsql.define_table{
         { column = 'id', sql_type = 'serial', create_only=true },
         { column = 'timestamp', sql_type = 'timestamp' },
         { column = 'tags',  type = 'jsonb' },
-        { column = 'geom',  type = 'point', projection = 'latlong'  },
+        { column = 'geom',  type = 'point', projection = 'latlong'  }
     }
 }
 
@@ -110,7 +110,7 @@ tables.line = osm2pgsql.define_table{
         { column = 'id', sql_type = 'serial', create_only=true },
         { column = 'timestamp', sql_type = 'timestamp' },
         { column = 'tags',  type = 'jsonb' },
-        { column = 'geom',  type = 'linestring', projection = 'latlong'  },
+        { column = 'geom',  type = 'linestring', projection = 'latlong'  }
     }
 }
 
@@ -121,7 +121,7 @@ tables.polygon = osm2pgsql.define_table{
         { column = 'id', sql_type = 'serial', create_only=true },
         { column = 'timestamp', sql_type = 'timestamp' },
         { column = 'tags',  type = 'jsonb' },
-        { column = 'geom',  type = 'multipolygon', projection = 'latlong'  },
+        { column = 'geom',  type = 'multipolygon', projection = 'latlong'  }
     }
 }
 
@@ -157,6 +157,17 @@ tables.todopg = osm2pgsql.define_table{
     columns = {{ column = 'is_pg', type = 'bool' }}
 }
 
+tables.shelter = osm2pgsql.define_table{
+    name = 'osm_poi_shelter',
+    ids = { type = 'any', id_column = 'osm_id', type_column = 'osm_type' },
+    columns = {
+    	{ column = 'timestamp', sql_type = 'timestamp' },
+        { column = 'tags',  type = 'jsonb' },
+        { column = 'geom',  type = 'geometry', projection = 'latlong' },
+        { column = 'dirty', type = 'bool' }
+    }
+}
+
 -- Debug output: Show definition of tables
 for name, table in pairs(tables) do
     print("\ntable '" .. name .. "':")
@@ -164,7 +175,7 @@ for name, table in pairs(tables) do
 --    print("  columns=" .. inspect(table:columns()))
 end
 
--- In append mode add new objects into to tables to be processed
+-- In append mode add new objects into todo tables to be processed
 -- in post-update SQL script
 function fill_todo_tables(object)
 
@@ -209,6 +220,28 @@ function osm2pgsql.process_node(object)
         timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
         geom = object:as_point()
     })
+    
+    if (object.tags.amenity == 'shelter') then
+      if contains({'basic_hut','lean_to'},object.tags.shelter_type) then
+        if (object.tags.sleeping == nil) or (object.tags.sleeping ~= 'no') then
+          tables.shelter:insert({
+            tags = object.tags,
+            timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
+            geom = object:as_point(),
+            dirty = true
+          })
+        end
+      end
+    end
+    
+    if (object.tags.tourism == 'wilderness_hut') then
+      tables.shelter:insert({
+        tags = object.tags,
+        timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
+        geom = object:as_point(),
+        dirty = true
+      })
+    end
 
 end
 
@@ -236,6 +269,27 @@ function osm2pgsql.process_way(object)
                 timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
                 geom = object:as_multipolygon()
             })
+        end
+        if (object.tags.amenity == 'shelter') then
+          if contains({'basic_hut','lean_to'},object.tags.shelter_type) then
+            if (object.tags.sleeping == nil) or (object.tags.sleeping ~= 'no') then
+              tables.shelter:insert({
+                tags = object.tags,
+                timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
+                geom = object:as_multipolygon(),
+                dirty = true
+              })
+            end
+          end
+        end
+    
+        if (object.tags.tourism == 'wilderness_hut') then
+          tables.shelter:insert({
+            tags = object.tags,
+            timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
+            geom = object:as_multipolygon(),
+            dirty = true
+          })
         end
     else
         if (has_any_of(object.tags, allowed_line_tags)) then
@@ -286,6 +340,27 @@ function osm2pgsql.process_relation(object)
             timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
             geom = object:as_multipolygon()
         })
+        if (object.tags.amenity == 'shelter') then
+          if contains({'basic_hut','lean_to'},object.tags.shelter_type) then
+            if (object.tags.sleeping == nil) or (object.tags.sleeping ~= 'no') then
+              tables.shelter:insert({
+                tags = object.tags,
+                timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
+                geom = object:as_multipolygon(),
+                dirty = true
+              })
+            end
+          end
+        end
+    
+        if (object.tags.tourism == 'wilderness_hut') then
+          tables.shelter:insert({
+            tags = object.tags,
+            timestamp = os.date('!%Y-%m-%dT%H:%M:%SZ', object.timestamp),
+            geom = object:as_multipolygon(),
+            dirty = true
+          })
+        end
     end
 end
 

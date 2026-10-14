@@ -876,8 +876,6 @@ WHERE
 -- to something else because these are then no longer camp-sites
 DELETE FROM osm_poi_campsites WHERE (NOT tags ? 'tourism') OR tags->>'tourism' NOT IN ('camp_site', 'caravan_site');
 
-REFRESH MATERIALIZED VIEW osm_poi_shelter;
-
 COMMIT;
 
 DELETE FROM osm_todo_campsites;
@@ -958,6 +956,18 @@ FROM
   osm_todo_playgrounds tp,
   osm_poi_point pp
 WHERE pp.osm_id=tp.osm_id AND pp.osm_type=tp.osm_type;
+
+-- remove shelters located inside camp_site or caravan_site polygons
+DELETE from osm_poi_shelter s
+WHERE dirty
+AND EXISTS (
+  SELECT 1
+  FROM osm_poi_campsites c
+  WHERE ST_Intersects(s.geom, c.geom)
+  AND c.osm_type != 'N'
+);
+UPDATE osm_poi_shelter SET dirty=false WHERE dirty;
+
 COMMIT;
 
 DELETE FROM osm_todo_playgrounds;
